@@ -16,6 +16,9 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 
 NODE_MODULES = os.path.join(ROOT, "node_modules")
 KURS_ID = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+# Namen, die im Repository schon Ordner sind oder im Bau/auf dem Pi vorkommen: keine Kurs-IDs
+RESERVIERT = ("docs", "tools", "tests", "engine", "server", "archiv", "kurse", "dist", "node_modules")
+BILDENDUNG = re.compile(r"""['"]([^'"]+\.(?:jpe?g|png|gif|webp|heic|heif|bmp|tiff?|svg|avif))['"]""", re.I)
 PAKETE = (("PIL", "Pillow"), ("markdown", "markdown"), ("yaml", "PyYAML"))
 TEST_ZEITLIMIT = 300   # Sekunden je Testlauf (Node bzw. pytest)
 MATHJAX_HINWEIS = "MathJax fehlt – einmal `npm install` ausführen (im Ordner foexlab). Ohne MathJax bleiben Formeln unlesbar."
@@ -62,6 +65,9 @@ def kurs_aufloesen(arg):
     kid = arg if ist_id else os.path.basename(os.path.normpath(ordner))
     if not os.path.isdir(ordner):
         raise Eingabefehler(f"Den Kurs „{arg}“ gibt es nicht (gesucht in {ordner}). Kurse liegen im Ordner kurse/<kurs-id>.")
+    if kid in RESERVIERT:
+        raise Eingabefehler(f"Die Kurs-Kennung „{kid}“ ist reserviert (so heißt schon ein Ordner des Projekts: {', '.join(RESERVIERT)}). "
+                            f"Bitte eine andere Kennung wählen, z. B. „{kid}-kurs“, und den Ordner umbenennen.")
     if not KURS_ID.match(kid):
         raise Eingabefehler(f"Der Ordnername „{kid}“ ist als Kurs-Kennung nicht erlaubt: nur kleine Buchstaben ohne Umlaute, Ziffern und einzelne "
                             f"Bindestriche, ohne Leerzeichen (z. B. „mein-kurs“). Die Kennung wird Teil der Internetadresse. Bitte den Ordner umbenennen.")
@@ -466,6 +472,19 @@ def tests_ordner(kurs_dir, kid):
     return (os.path.join(kurs_dir, "tests", "js"), os.path.join(kurs_dir, "tests", "py"), "test_*.py")
 
 
+def _kurse_im_repo():
+    ordner = os.path.join(ROOT, "kurse")
+    return {n for n in os.listdir(ordner) if os.path.isdir(os.path.join(ordner, n))} if os.path.isdir(ordner) else set()
+
+
+def eigene_py_tests(dateien, kid, kurse):
+    """Nur Testdateien, die zu genau diesem Kurs gehören: längste passende Kurs-ID gewinnt
+    (Kurs mzi nimmt nicht test_mzi_photonen_….py, wenn es den Kurs mzi-photonen gibt), wie geaenderte_kurse."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import geaenderte_kurse as gk
+    return [d for d in dateien if gk.kurs_zu_datei("tests/py/" + os.path.basename(d), kurse) == kid]
+
+
 def _tap_fehler(text):
     """Namen der fehlgeschlagenen Einzeltests aus der TAP-Ausgabe von node --test (ohne übergeordnete Gruppen)."""
     offen = []   # (Einrückung, Name)
@@ -493,8 +512,10 @@ def pruefe_kurstests(m, zaehler=None):
     js, py_ordner, py_muster = tests_ordner(m.kurs_dir, m.id)
     out, roh = [], []
     if zaehler is None: zaehler = []
-    js_dateien = sorted(glob.glob(os.path.join(glob.escape(js), "*.test.js"))) if os.path.isdir(js) else []
+    js_dateien = sorted(glob.glob(os.path.join(glob.escape(js), "**", "*.test.js"), recursive=True)) if os.path.isdir(js) else []
     py_dateien = sorted(glob.glob(os.path.join(glob.escape(py_ordner), py_muster)))
+    if os.path.normpath(py_ordner) == os.path.join(ROOT, "tests", "py"):
+        py_dateien = eigene_py_tests(py_dateien, m.id, _kurse_im_repo() | {m.id})
     zu_lang = lambda art: Befund(f"Tests brauchen zu lange: die {art}-Tests laufen länger als {TEST_ZEITLIMIT} Sekunden – vermutlich hängt ein Test oder läuft endlos", "Tests")
     if js_dateien:
         erg = _lauf(["node", "--test", "--test-reporter=tap"] + js_dateien)
@@ -596,6 +617,19 @@ def platzhalter_liste(m):
 
 # ---------------------------------------------------------------- Zusammenstellung
 
+def baufehler_befund(m, e):
+    """Befund für einen Bau, der mit einer Ausnahme abbricht; kaputte oder fremde Bilder mit Dateinamen."""
+    t = BILDENDUNG.search(str(e))
+    if t or type(e).__name__ == "UnidentifiedImageError":
+        pfad = t.group(1) if t else ""
+        try: rel = os.path.relpath(pfad, m.kurs_dir) if pfad else "media/"
+        except ValueError: rel = pfad
+        if rel.startswith(".."): rel = os.path.basename(pfad)
+        return Befund(f"Das Bild {rel} lässt sich nicht lesen – für Fotos nur JPG oder PNG verwenden (z. B. am Mac: "
+                      f"sips -s format jpeg <bild> --out media/<name>.jpg) und den Verweis anpassen", rel)
+    return Befund("Der Kurs lässt sich nicht bauen (technischer Grund mit --details); bitte Kopfbereiche und Überschriften prüfen", "Kurs")
+
+
 def pruefe(kurs_dir, tests=True):
     """Prüft einen Kurs. kurs_dir: Kurs-ID oder Pfad. Wirft Eingabefehler bei falscher Eingabe."""
     kurs_dir, kid = kurs_aufloesen(kurs_dir)
@@ -617,7 +651,7 @@ def pruefe(kurs_dir, tests=True):
                 warnungen = baue_und_lese(m, tmp)
         except Exception as e:   # kaputte Quelle, die die Engine nicht baut – nie ein Traceback für Autoren
             b.rohausgabe = [f"{type(e).__name__}: {e}"]
-            b.befunde.append(Befund("Der Kurs lässt sich nicht bauen (technischer Grund mit --details); bitte Kopfbereiche und Überschriften prüfen", "Kurs"))
+            b.befunde.append(baufehler_befund(m, e))
             return b
         b.rohausgabe = list(m.meldungen)
         b.befunde += pruefe_warnungen(m, warnungen, b.einrichtung)

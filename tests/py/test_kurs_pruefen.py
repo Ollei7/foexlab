@@ -320,3 +320,45 @@ def test_einrichtung_vor_tests(monkeypatch):
     monkeypatch.setattr(kp, "NODE_MODULES", "/gibt/es/nicht")
     b = kp.pruefe(os.path.join(FAELLE, "kurstest-rot"))
     assert b.einrichtung and b.befunde == []
+
+
+# ---------------------------------------------------------------- Review: Testsuche, reservierte IDs, Bilder
+
+def test_js_tests_auch_in_unterordnern(tmp_path):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "tests" / "js" / "teil").mkdir(parents=True)
+    (ziel / "tests" / "js" / "teil" / "rot.test.js").write_text(
+        "require('node:test')('tief kaputt', () => { throw new Error('x'); });\n", encoding="utf-8")
+    b = kp.pruefe(str(ziel))
+    assert gefunden(b, "Test ‚tief kaputt‘ schlägt fehl"), texte(b)
+
+
+def test_py_tests_laengste_kurs_id_gewinnt():
+    dateien = ["/r/tests/py/test_mzi_struktur.py", "/r/tests/py/test_mzi_photonen_a.py",
+               "/r/tests/py/test_mzix.py", "/r/tests/py/test_mzi.py"]
+    kurse = {"mzi", "mzi-photonen"}
+    assert kp.eigene_py_tests(dateien, "mzi", kurse) == ["/r/tests/py/test_mzi_struktur.py", "/r/tests/py/test_mzi.py"]
+    assert kp.eigene_py_tests(dateien, "mzi-photonen", kurse) == ["/r/tests/py/test_mzi_photonen_a.py"]
+    assert kp.eigene_py_tests(dateien, "mzi", {"mzi"}) == ["/r/tests/py/test_mzi_struktur.py",
+                                                            "/r/tests/py/test_mzi_photonen_a.py", "/r/tests/py/test_mzi.py"]
+
+
+@pytest.mark.parametrize("name", kp.RESERVIERT)
+def test_reservierte_kurs_id(tmp_path, capsys, name):
+    ziel = tmp_path / name
+    shutil.copytree(os.path.join(FAELLE, "gut"), ziel)
+    assert kp.main([str(ziel), "--ohne-tests"]) == 2
+    out = capsys.readouterr().out
+    assert "reserviert" in out and name in out and "Traceback" not in out
+
+
+@pytest.mark.parametrize("datei", ["foto.jpg", "foto.heic"])
+def test_kaputtes_bild_nennt_datei(tmp_path, datei):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "media").mkdir()
+    (ziel / "media" / datei).write_text("kein bild", encoding="utf-8")
+    with open(ziel / "abschnitte" / "01-start.md", "a", encoding="utf-8") as f:
+        f.write(f"\n![Foto](media/{datei})\n")
+    b = kp.pruefe(str(ziel), tests=False)
+    assert gefunden(b, f"media/{datei}", "nur JPG oder PNG"), texte(b)
+    assert not gefunden(b, "lässt sich nicht bauen")
