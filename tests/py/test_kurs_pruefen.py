@@ -88,6 +88,10 @@ def test_platzhalter_liste():
     assert b.befunde == [], texte(b)
     assert len(b.platzhalter) == 1 and "Interferometer" in b.platzhalter[0]
     assert b.bereit
+    zeilen = []
+    kp.ausgeben(b, ausgabe=zeilen.append)
+    assert zeilen[0].startswith("Kurs: 1 Kapitel, 2 Karten") and "Platzhalter: keine" not in zeilen
+    assert zeilen[1:] == ["Platzhalter (noch zu bauen):", "– " + b.platzhalter[0], "bereit"]
 
 
 def test_medien_fehlen():
@@ -142,12 +146,14 @@ def test_cli_letzte_zeile():
     def lauf(fall):
         return subprocess.run([sys.executable, "tools/kurs_pruefen.py", os.path.join(FAELLE, fall), "--ohne-tests"], capture_output=True, text=True)
     r = lauf("gut")
-    assert r.returncode == 0 and r.stdout.rstrip("\n").splitlines()[-1] == "bereit"
+    assert r.returncode == 0 and r.stdout.rstrip("\n").splitlines() == [
+        "Kurs: 2 Kapitel, 2 Karten, 1 Feld, 0 Werkzeuge, Tests nicht ausgeführt (--ohne-tests)", "Platzhalter: keine", "bereit"]
     r = lauf("ziel-fehlt")
     assert r.returncode == 1
     zeilen = r.stdout.rstrip("\n").splitlines()
     assert zeilen[-1] == "noch nicht bereit (1 Punkt)"
     assert any(z.startswith("– ") for z in zeilen[:-1])
+    assert not any(z.startswith("Kurs:") or z.startswith("Platzhalter") for z in zeilen), "Zusammenfassung nur bei „bereit“"
 
 
 def test_details_zeigt_engine_ausgabe(capsys):
@@ -275,7 +281,8 @@ def test_pfad_statt_id(tmp_path):
     ziel = kopie_von_gut(tmp_path)
     (ziel / "tests" / "js").mkdir(parents=True)
     (ziel / "tests" / "js" / "gruen.test.js").write_text("require('node:test')('ok', () => {});\n", encoding="utf-8")
-    assert kp.pruefe(str(ziel)).bereit
+    b = kp.pruefe(str(ziel))
+    assert b.bereit and b.zusammenfassung.endswith(", 1 Test bestanden"), b.zusammenfassung
     (ziel / "tests" / "js" / "rot.test.js").write_text("require('node:test')('kaputt hier', () => { throw new Error('x'); });\n", encoding="utf-8")
     b = kp.pruefe(str(ziel))
     assert gefunden(b, "Test ‚kaputt hier‘ schlägt fehl") and len(b.befunde) == 1
@@ -288,6 +295,16 @@ def test_python_test_des_kurses(tmp_path):
     b = kp.pruefe(str(ziel))
     assert gefunden(b, "Test ‚test_schlecht‘ schlägt fehl") and len(b.befunde) == 1
     assert not any("assert" in x.text for x in b.befunde)
+
+
+def test_zusammenfassung_zaehlt_js_und_python_tests(tmp_path):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "tests" / "js").mkdir(parents=True)
+    (ziel / "tests" / "js" / "a.test.js").write_text("const t = require('node:test'); t('a', () => {}); t('b', () => {});\n", encoding="utf-8")
+    (ziel / "tests" / "py").mkdir(parents=True)
+    (ziel / "tests" / "py" / "test_kopie.py").write_text("def test_gut():\n    assert True\n", encoding="utf-8")
+    b = kp.pruefe(str(ziel))
+    assert b.bereit and b.zusammenfassung.endswith(", 3 Tests bestanden"), b.zusammenfassung
 
 
 def test_test_zu_langsam(tmp_path, monkeypatch):

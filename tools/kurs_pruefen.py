@@ -3,7 +3,8 @@
 
 Aufruf:  python3 tools/kurs_pruefen.py <kurs-id oder pfad> [--ohne-tests] [--details]
 Eine Zeile je Befund („– Text (Ort)“), danach ggf. die Liste der Platzhalter, letzte Zeile genau
-„bereit“ oder „noch nicht bereit (n Punkte)“.
+„bereit“ oder „noch nicht bereit (n Punkte)“. Bei „bereit“ steht davor eine Zusammenfassung (Kapitel, Karten,
+Felder, Werkzeuge, Tests) und „Platzhalter: keine“ oder die Liste der Platzhalter.
 Exit 0: bereit, 1: nicht bereit, 2: Einrichtungsproblem oder falsche Eingabe (Meldung auf Deutsch, nie ein Traceback).
 """
 import argparse, collections, glob, importlib, json, os, re, shutil, subprocess, sys, tempfile, urllib.parse
@@ -43,6 +44,7 @@ class Befund:
 class Bericht:
     befunde: list = field(default_factory=list)
     platzhalter: list = field(default_factory=list)
+    zusammenfassung: str = ""
     einrichtung: list = field(default_factory=list)
     rohausgabe: list = field(default_factory=list)
 
@@ -486,10 +488,11 @@ def _lauf(befehl):
     return (r.stdout or "") + (r.stderr or ""), r.returncode
 
 
-def pruefe_kurstests(m):
-    """Führt nur die Tests dieses Kurses aus. → (Befunde, Rohausgabe)"""
+def pruefe_kurstests(m, zaehler=None):
+    """Führt nur die Tests dieses Kurses aus. → (Befunde, Rohausgabe); zaehler (Liste) bekommt die Zahl bestandener Tests."""
     js, py_ordner, py_muster = tests_ordner(m.kurs_dir, m.id)
     out, roh = [], []
+    if zaehler is None: zaehler = []
     js_dateien = sorted(glob.glob(os.path.join(glob.escape(js), "*.test.js"))) if os.path.isdir(js) else []
     py_dateien = sorted(glob.glob(os.path.join(glob.escape(py_ordner), py_muster)))
     zu_lang = lambda art: Befund(f"Tests brauchen zu lange: die {art}-Tests laufen länger als {TEST_ZEITLIMIT} Sekunden – vermutlich hängt ein Test oder läuft endlos", "Tests")
@@ -499,6 +502,7 @@ def pruefe_kurstests(m):
         else:
             text, code = erg
             roh.append("Kurstests (JavaScript):"); roh += ["  " + z for z in text.splitlines()]
+            zaehler += [int(z) for z in re.findall(r"^# pass (\d+)$", text, re.M)]
             namen = _tap_fehler(text)
             for n in namen: out.append(Befund(f"Test ‚{n}‘ schlägt fehl", "Tests"))
             if code != 0 and not namen:
@@ -509,6 +513,7 @@ def pruefe_kurstests(m):
         else:
             text, code = erg
             roh.append("Kurstests (Python):"); roh += ["  " + z for z in text.splitlines()]
+            zaehler += [int(z) for z in re.findall(r"\b(\d+) passed\b", text)[-1:]]
             namen = []
             for z in text.splitlines():
                 t = re.match(r"^(?:FAILED|ERROR) \S+?::(\S+)", z) or re.match(r"^ERROR (\S+?\.py)\b", z)
@@ -572,6 +577,16 @@ def pruefe_leer(m):
     return [Befund("Der Kurs hat keine Karten – im Ordner abschnitte muss mindestens eine .md-Datei mit einer ##-Überschrift stehen", "abschnitte")]
 
 
+def zusammenfassung(m, tests):
+    """Eine Zeile: was der Kurs enthält und wie viele Tests liefen (tests: Zahl bestandener Tests oder None = nicht ausgeführt)."""
+    def anzahl(n, eins, mehr): return f"{n} {eins if n == 1 else mehr}"
+    werkzeuge = {q["kv"].get("name", "") for sec in m.abschnitte for a in sec["acts"] for q in a["qs"] if "werkzeug" in q["cls"]}
+    felder = sum(len(k["felder"]) for k in m.karten.values())
+    t = "Tests nicht ausgeführt (--ohne-tests)" if tests is None else (anzahl(tests, "Test", "Tests") + " bestanden" if tests else "keine Tests")
+    return (f"Kurs: {anzahl(len(m.abschnitte), 'Kapitel', 'Kapitel')}, {anzahl(len(m.karten), 'Karte', 'Karten')}, "
+            f"{anzahl(felder, 'Feld', 'Felder')}, {anzahl(len(werkzeuge), 'Werkzeug', 'Werkzeuge')}, {t}")
+
+
 def platzhalter_liste(m):
     out = []
     for kid, k in m.karten.items():
@@ -609,10 +624,13 @@ def pruefe(kurs_dir, tests=True):
         for check in (pruefe_leer, pruefe_freischaltung, pruefe_kontrollfragen, pruefe_eindeutigkeit, pruefe_werkzeuge, pruefe_medien):
             b.befunde += check(m)
         b.platzhalter = platzhalter_liste(m)
+        zaehler = None
         if tests:
-            fehler, roh = pruefe_kurstests(m)
+            zaehler = []
+            fehler, roh = pruefe_kurstests(m, zaehler)
             b.befunde += fehler
             b.rohausgabe += roh
+        b.zusammenfassung = zusammenfassung(m, None if zaehler is None else sum(zaehler))
     except Exception as e:
         raise Pruefwerkzeugfehler(f"Beim Prüfen von {kurs_dir} ist im Prüfwerkzeug selbst etwas schiefgegangen ({type(e).__name__}: {e}). Bitte melden") from e
     return b
@@ -628,6 +646,9 @@ def ausgeben(b, details=False, ausgabe=print):
         ausgabe("Bitte erst einrichten, dann noch einmal prüfen.")
         return
     for f in b.befunde: ausgabe(f"– {f.text} ({f.ort})")
+    if b.bereit and b.zusammenfassung:
+        ausgabe(b.zusammenfassung)
+        if not b.platzhalter: ausgabe("Platzhalter: keine")
     if b.platzhalter:
         ausgabe("Platzhalter (noch zu bauen):")
         for p in b.platzhalter: ausgabe(f"– {p}")
