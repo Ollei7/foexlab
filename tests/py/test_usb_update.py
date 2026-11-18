@@ -261,3 +261,73 @@ def test_schreibgeschuetzter_stick_update_wird_trotzdem_angewendet(tmp_path, mon
     erg = aktualisiere(stick, ziel, sich)
     assert erg.ok
     assert (ziel / "index.html").read_text() == "neu-start"
+
+
+def _halte_sperre(pfad):
+    import fcntl
+    f = open(str(pfad), "a")
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    return f
+
+
+def test_zweiter_stick_wartet_und_wird_abgewiesen(tmp_path):
+    stick = tmp_path / "stick"
+    stick.mkdir()
+    sperre = tmp_path / "run" / "update.lock"
+    sperre.parent.mkdir()
+    erster = _halte_sperre(sperre)
+    try:
+        assert usb_update._sperren(sperre, stick, warte_s=0.2, takt=0.05) is None
+        assert "anderes Update" in (stick / "update.txt").read_text()
+    finally:
+        erster.close()
+
+
+def test_zweiter_stick_wartet_bis_erster_fertig(tmp_path):
+    import threading
+    stick = tmp_path / "stick"
+    stick.mkdir()
+    sperre = tmp_path / "update.lock"
+    erster = _halte_sperre(sperre)
+    threading.Timer(0.2, erster.close).start()
+    f = usb_update._sperren(sperre, stick, warte_s=5, takt=0.05)
+    assert f is not None and f != "ohne"
+    f.close()
+
+
+def test_main_bei_belegter_sperre_kein_update(tmp_path, monkeypatch):
+    stick = tmp_path / "stick"
+    baue_quelle(stick)
+    sperre = tmp_path / "update.lock"
+    monkeypatch.setattr(usb_update, "SPERRE", sperre)
+    monkeypatch.setattr(usb_update, "WARTEN_S", 0.1)
+    monkeypatch.setattr(usb_update, "TAKT_S", 0.02)
+    aufgerufen = []
+    monkeypatch.setattr(usb_update, "aktualisiere", lambda s: aufgerufen.append(s))
+    erster = _halte_sperre(sperre)
+    try:
+        assert usb_update.main([str(stick)]) == 1
+    finally:
+        erster.close()
+    assert aufgerufen == []
+    t = (stick / "update.txt").read_text()
+    assert "Fehler" in t and "anderes Update" in t
+
+
+
+def test_unit_gehaertet_und_ohne_ext4():
+    server = Path(__file__).resolve().parents[2] / "server"
+    unit = (server / "foexlab-usb-update@.service").read_text()
+    for zeile in ("NoNewPrivileges=yes", "PrivateNetwork=yes", "ProtectHome=yes",
+                  "PrivateTmp=yes", "ProtectSystem=strict",
+                  "ReadWritePaths=/srv /run/foexlab-usb"):
+        assert zeile in unit
+    # Einhängen außerhalb der Sandbox, sonst sieht ExecStart den Stick nicht
+    assert "ExecStartPre=+/bin/mount -t vfat,exfat " in unit
+    assert "ExecStopPost=-+/bin/umount" in unit or "ExecStopPost=+-/bin/umount" in unit
+    assert "ext4" not in unit
+    assert "/run/foexlab-usb/update.lock" == str(usb_update.SPERRE)
+    regel = [z for z in (server / "99-foexlab-usb.rules").read_text().splitlines()
+             if z.strip() and not z.startswith("#")]
+    assert len(regel) == 1
+    assert 'ENV{ID_FS_TYPE}=="vfat|exfat",' in regel[0] and "ext4" not in regel[0]

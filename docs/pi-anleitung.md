@@ -82,7 +82,7 @@ Ohne Laptop-Verbindung zum Pi: siehe Abschnitt 5 (USB-Stick).
 Ohne Mac und ohne Netz: Der Pi übernimmt neue Inhalte direkt von einem USB-Stick.
 
 1. Am Computer mit Internet die Datei `foexlab-update.zip` laden: https://github.com/Ollei7/foexlab/releases/tag/letzter-stand
-2. Die Zip-Datei entpacken und den Ordner `foexlab-update` auf den Stick kopieren. Auf dem Stick muss `foexlab-update/index.html` liegen, direkt im Hauptverzeichnis des Sticks. Achtung bei Windows „Alle extrahieren“: Das legt oft einen weiteren Ordner darum (`foexlab-update/foexlab-update/…`). Dann den inneren Ordner auf den Stick ziehen. Der Stick darf FAT32, exFAT oder ext4 sein.
+2. Die Zip-Datei entpacken und den Ordner `foexlab-update` auf den Stick kopieren. Auf dem Stick muss `foexlab-update/index.html` liegen, direkt im Hauptverzeichnis des Sticks. Achtung bei Windows „Alle extrahieren“: Das legt oft einen weiteren Ordner darum (`foexlab-update/foexlab-update/…`). Dann den inneren Ordner auf den Stick ziehen. Der Stick muss FAT32 oder exFAT sein (andere Dateisysteme wie ext4 werden nicht eingehängt).
 3. Stick in den Pi stecken und 1 bis 2 Minuten warten.
 4. Am Computer die Datei `update.txt` auf dem Stick lesen: Dort steht, ob es geklappt hat (`OK` oder `Fehler` mit Grund, eine Zeile je Problem) und welche Kurse jetzt auf dem Pi sind. Steht dort „Aktualisierung läuft“, noch warten. Fehlt die Datei oder ist sie alt, Stick ziehen und neu einstecken.
 5. Stick danach abziehen.
@@ -92,7 +92,10 @@ Gut zu wissen:
 - Bei einem Fehler bleibt der alte Stand unverändert.
 - Der vorherige Stand liegt auf dem Pi in `/srv/foexlab.vorher` (nur eine Sicherung, sie wird beim nächsten Update ersetzt).
 - Ein Stick ohne Ordner `foexlab-update` wird ignoriert.
-- Vom Stick werden nur Dateien kopiert, nichts wird ausgeführt.
+- Vom Stick werden nur Dateien kopiert, nichts wird ausgeführt. Der Kopierdienst läuft abgeschottet (kein Netz, schreibt nur nach `/srv` und auf den Stick).
+- Stecken zwei Update-Sticks gleichzeitig, wartet der zweite, bis der erste fertig ist (in seiner `update.txt` steht „Ein anderes Update läuft gerade“). Nach 10 Minuten Warten gibt er auf; dann den Stick neu einstecken.
+- **Wichtig – wer einen passenden Stick hat, kann die Seite ersetzen.** Der Pi prüft nicht, von wem der Stick kommt (es gibt bewusst keinen Schlüssel). Jeder, der einen Stick mit einem Ordner `foexlab-update` einsteckt, tauscht die Inhalte aus, die alle iPads sehen. Deshalb: den Pi außer Reichweite aufstellen (abgeschlossener Schrank oder Raum, USB-Anschlüsse nicht frei zugänglich), und nur Lehrkräfte bzw. das Laborteam aktualisieren. Wurde doch ein fremder Stand eingespielt: mit dem richtigen Stick oder per Laptop (Abschnitt 4) neu aktualisieren.
+- Checkliste für den ersten Test am echten Pi: [Feldtest USB-Aktualisierung](pi-feldtest.md).
 - Nicht während eines Labortags aktualisieren (siehe Abschnitt 4).
 
 ## 6 Aufsteller drucken
@@ -114,7 +117,7 @@ python3 tools/aufsteller.py kurse/mzi
 | „Keine Internetverbindung“-Meldung | Ist normal. „Trotzdem verbunden bleiben“ bzw. „Ohne Internet verwenden“ wählen. |
 | Abholcode schlägt fehl | Ist der Abholdienst aktiv? `ssh pi@192.168.178.10 systemctl status foexlab-abholdienst`. Neustart mit `sudo systemctl restart foexlab-abholdienst`. Achtung: Ein Neustart löscht alle abgelegten PDFs. |
 | iPad zeigt alte Fassung | Seite neu laden. Hilft das nicht: Safari-Tab schließen und den QR-Code erneut scannen. |
-| Update per Stick klappt nicht | `update.txt` auf dem Stick lesen. Steht dort nichts: Dateisystem prüfen (FAT32, exFAT oder ext4) und ob der Ordner `foexlab-update` direkt auf dem Stick liegt, nicht in einem weiteren Ordner. |
+| Update per Stick klappt nicht | `update.txt` auf dem Stick lesen. Steht dort nichts: Dateisystem prüfen (nur FAT32 oder exFAT) und ob der Ordner `foexlab-update` direkt auf dem Stick liegt, nicht in einem weiteren Ordner. |
 | Viele Geräte, Verbindung bricht ab | Mehr als etwa 30 Geräte gleichzeitig vermeiden. Labor-iPads, die gerade nicht gebraucht werden, aus dem WLAN nehmen. |
 
 ## Datenschutz
@@ -122,3 +125,4 @@ python3 tools/aufsteller.py kurse/mzi
 - Eingaben der Schülerinnen und Schüler bleiben im Browser des jeweiligen Geräts.
 - Der Pi sieht ein Protokoll nur, wenn eine Gruppe einen Abholcode erzeugt. Das PDF liegt dann im Arbeitsspeicher, höchstens 12 Stunden oder bis zum Ausschalten.
 - Caddy und der Abholdienst schreiben keine Zugriffsprotokolle. Die Systemprotokolle liegen nur im Arbeitsspeicher.
+- Das Update per USB-Stick ist nicht gegen fremde Sticks geschützt: Wer einen passenden Stick einsteckt, kann die Seiten ersetzen (siehe Abschnitt 5). Der Pi steht daher außer Reichweite der Schülerinnen und Schüler (abgeschlossener Schrank oder Raum), und nur das Laborpersonal aktualisiert.

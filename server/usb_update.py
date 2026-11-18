@@ -9,12 +9,17 @@ import os
 import shutil
 import stat
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import List
 
 ORDNER = "foexlab-update"
+# Liegt im beschreibbaren Bereich der gehärteten Unit (ReadWritePaths=/run/foexlab-usb).
+SPERRE = Path("/run/foexlab-usb/update.lock")
+WARTEN_S = 600.0  # so lange wartet ein zweiter Stick auf den ersten
+TAKT_S = 1.0
 
 
 @dataclass
@@ -220,6 +225,38 @@ def aktualisiere(stick: Path, ziel: Path = Path("/srv/foexlab"),
     return erg
 
 
+def _sperren(sperrdatei: Path, stick: Path, warte_s: float = WARTEN_S, takt: float = 1.0):
+    """Nur ein Update gleichzeitig. Gibt die offene Sperrdatei zurück,
+    None wenn die Wartezeit ablief, "ohne" wenn keine Sperre möglich ist."""
+    try:
+        import fcntl
+        Path(sperrdatei).parent.mkdir(parents=True, exist_ok=True)
+        f = open(str(sperrdatei), "a")
+    except Exception:
+        return "ohne"  # lieber ohne Sperre aktualisieren als gar nicht
+    ende = time.monotonic() + warte_s
+    gemeldet = False
+    while True:
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return f
+        except OSError:
+            pass
+        if not gemeldet:
+            gemeldet = True
+            try:
+                _schreibe_text(stick, "foeXlab Update\nZeitpunkt: %s\nEin anderes Update läuft "
+                               "gerade (zweiter Stick?). Dieses Update wartet … "
+                               "(Stick noch nicht abziehen)\n"
+                               % datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
+            except Exception:
+                pass
+        if time.monotonic() >= ende:
+            f.close()
+            return None
+        time.sleep(takt)
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if len(argv) != 1:
@@ -228,7 +265,18 @@ def main(argv=None) -> int:
     stick = Path(argv[0])
     if not (stick / ORDNER).exists():
         return 0  # gewöhnlicher Stick: nichts tun, nichts schreiben
-    erg = aktualisiere(stick)
+    sperre = _sperren(SPERRE, stick, WARTEN_S, TAKT_S)
+    if sperre is None:
+        erg = Ergebnis(False, "Ein anderes Update lief zu lange. Dieses Update wurde nicht "
+                       "ausgeführt. Bitte warten, bis der andere Stick fertig ist, "
+                       "dann diesen Stick neu einstecken.")
+        _schreibe_protokoll(stick, erg)
+    else:
+        try:
+            erg = aktualisiere(stick)
+        finally:
+            if sperre != "ohne":
+                sperre.close()
     text = ("OK: " if erg.ok else "Fehler: ") + erg.meldung
     print(text.encode("utf-8", "backslashreplace").decode("utf-8"))
     return 0 if erg.ok else 1

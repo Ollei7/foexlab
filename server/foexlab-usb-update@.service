@@ -5,11 +5,23 @@ After=dev-%i.device
 
 [Service]
 Type=oneshot
-# Stick nur zum Kopieren einhängen: nichts ausführbar, keine Gerätedateien
-ExecStartPre=/bin/mkdir -p /run/foexlab-usb/%i
-ExecStartPre=/bin/mount -t vfat,exfat,ext4 -o rw,noexec,nosuid,nodev,sync /dev/%I /run/foexlab-usb/%i
+# Einhängen/Aushängen mit „+“: läuft außerhalb der Sandbox unten. Mit eigenem
+# Mount-Namensraum (ProtectSystem, PrivateTmp …) bekäme sonst jeder Exec-Befehl
+# einen eigenen Namensraum, und ExecStart sähe den eingehängten Stick nicht.
+# Der Stick wird nur zum Kopieren eingehängt: nichts ausführbar, keine Gerätedateien.
+ExecStartPre=+/bin/mkdir -p /run/foexlab-usb/%i
+ExecStartPre=+/bin/mount -t vfat,exfat -o rw,noexec,nosuid,nodev,sync /dev/%I /run/foexlab-usb/%i
 ExecStart=/usr/bin/python3 /opt/foexlab/usb_update.py /run/foexlab-usb/%i
-ExecStartPost=/bin/sync
-ExecStopPost=-/bin/sync
-ExecStopPost=-/bin/umount /run/foexlab-usb/%i
+ExecStartPost=+/bin/sync
+ExecStopPost=-+/bin/sync
+ExecStopPost=-+/bin/umount /run/foexlab-usb/%i
 TimeoutStartSec=900
+# Härtung des Kopierdienstes: kein Netz, kein /home, eigenes /tmp, keine neuen
+# Rechte; schreiben darf er nur /srv (Inhalte, Sicherung) und /run/foexlab-usb
+# (Stick, update.txt, Sperrdatei update.lock). chown/rename in /srv bleiben erlaubt.
+NoNewPrivileges=yes
+PrivateNetwork=yes
+ProtectHome=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/srv /run/foexlab-usb
