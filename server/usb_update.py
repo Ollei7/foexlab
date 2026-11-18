@@ -4,8 +4,10 @@
 Es werden nur Dateien kopiert; nichts vom Stick wird ausgeführt.
 Aufruf: python3 usb_update.py <Einhängeordner-des-Sticks>
 """
+import hashlib
 import os
 import shutil
+import stat
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -60,7 +62,15 @@ def pruefe_quelle(quelle: Path) -> List[str]:
 
 
 def _kopiere_datei(quelle: str, ziel: str) -> None:
-    shutil.copyfile(quelle, ziel, follow_symlinks=False)
+    """Kopiert nur eine normale Datei; legt nie Verknüpfungen an."""
+    if not stat.S_ISREG(os.lstat(quelle).st_mode):
+        raise OSError("%s ist keine normale Datei" % os.path.basename(quelle))
+    fd = os.open(quelle, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    with os.fdopen(fd, "rb") as q:
+        if not stat.S_ISREG(os.fstat(q.fileno()).st_mode):
+            raise OSError("%s ist keine normale Datei" % os.path.basename(quelle))
+        with open(ziel, "xb") as z:
+            shutil.copyfileobj(q, z)
 
 
 def _kopiere_baum(quelle: Path, ziel: Path) -> None:
@@ -69,19 +79,48 @@ def _kopiere_baum(quelle: Path, ziel: Path) -> None:
         rel = os.path.relpath(ordner, str(quelle))
         zielordner = ziel if rel == "." else ziel / rel
         for u in unterordner:
+            if os.path.islink(os.path.join(ordner, u)):
+                raise OSError("%s ist plötzlich eine Verknüpfung" % u)
             (zielordner / u).mkdir()
         for d in dateien:
             _kopiere_datei(os.path.join(ordner, d), str(zielordner / d))
+
+
+def _manifest(wurzel: Path) -> dict:
+    """Relative Pfade -> (Größe, sha256) aller Dateien."""
+    m = {}
+    for ordner, _u, dateien in os.walk(str(wurzel), followlinks=False):
+        for d in dateien:
+            pfad = os.path.join(ordner, d)
+            if os.path.islink(pfad):
+                continue
+            h = hashlib.sha256()
+            with open(pfad, "rb") as f:
+                for block in iter(lambda: f.read(1 << 20), b""):
+                    h.update(block)
+            m[os.path.relpath(pfad, str(wurzel))] = (os.path.getsize(pfad), h.hexdigest())
+    return m
+
+
+def _groesse(wurzel: Path) -> int:
+    summe = 0
+    for ordner, _u, dateien in os.walk(str(wurzel), followlinks=False):
+        for d in dateien:
+            try:
+                summe += os.lstat(os.path.join(ordner, d)).st_size
+            except OSError:
+                pass
+    return summe
 
 
 def _besitzer_uebertragen(vorbild: Path, baum: Path) -> None:
     if not hasattr(os, "geteuid") or os.geteuid() != 0 or not vorbild.exists():
         return
     st = vorbild.stat()
-    os.chown(str(baum), st.st_uid, st.st_gid)
-    for ordner, unterordner, dateien in os.walk(str(baum)):
+    os.lchown(str(baum), st.st_uid, st.st_gid)
+    for ordner, unterordner, dateien in os.walk(str(baum), followlinks=False):
         for name in list(unterordner) + list(dateien):
-            os.chown(os.path.join(ordner, name), st.st_uid, st.st_gid)
+            os.lchown(os.path.join(ordner, name), st.st_uid, st.st_gid)
 
 
 def _loesche(pfad: Path) -> None:
@@ -91,32 +130,61 @@ def _loesche(pfad: Path) -> None:
         shutil.rmtree(str(pfad))
 
 
+def _schreibe_text(stick: Path, text: str) -> None:
+    (stick / "update.txt").write_bytes(text.encode("utf-8", "backslashreplace"))
+
+
 def _schreibe_protokoll(stick: Path, erg: Ergebnis) -> None:
-    text = "foeXlab Update\nZeitpunkt: %s\nErgebnis: %s\nKurse: %s\n" % (
+    zeilen = erg.meldung.split("\n")
+    text = "foeXlab Update\nZeitpunkt: %s\nErgebnis: %s\n%s\nKurse: %s\n" % (
         datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-        ("OK – " if erg.ok else "Fehler – ") + erg.meldung,
+        "OK" if erg.ok else "Fehler",
+        "\n".join("  " + z for z in zeilen),
         ", ".join(erg.kurse) if erg.kurse else "(keine)")
     try:
-        (stick / "update.txt").write_text(text, encoding="utf-8")
-    except OSError:
+        _schreibe_text(stick, text)
+    except Exception:
+        pass  # Stick schreibgeschützt oder voll: Ergebnis steht auf der Konsole
+
+
+def _schreibe_laeuft(stick: Path) -> None:
+    try:
+        _schreibe_text(stick, "foeXlab Update\nZeitpunkt: %s\nAktualisierung läuft … "
+                       "(Stick noch nicht abziehen)\n" % datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
+    except Exception:
         pass
+
+
+def _stelle_wieder_her(ziel: Path, sicherung: Path) -> None:
+    """Nach Absturz mitten im Austausch: fehlt ziel, die Sicherung zurück."""
+    if not ziel.exists() and sicherung.exists():
+        os.rename(str(sicherung), str(ziel))
 
 
 def _ersetze(stick: Path, ziel: Path, sicherung: Path) -> Ergebnis:
     quelle = stick / ORDNER
     probleme = pruefe_quelle(quelle)
     if probleme:
-        return Ergebnis(False, " ".join(probleme))
+        return Ergebnis(False, "\n".join(probleme))
     kurse = _kurse(quelle)
     neu = Path(str(ziel) + ".neu")
     try:
+        if ziel.exists() and _manifest(quelle) == _manifest(ziel):
+            return Ergebnis(True, "Schon aktuell – nichts geändert.", kurse)
         _loesche(neu)
+        bedarf = int(_groesse(quelle) * 1.1) + 50 * 1024 * 1024
+        frei = shutil.disk_usage(str(ziel.parent)).free
+        if frei < bedarf:
+            return Ergebnis(False, "Zu wenig Platz auf dem Pi: %d MB frei, %d MB nötig. "
+                            "Der alte Stand bleibt." % (frei // 2**20, bedarf // 2**20), kurse)
         _kopiere_baum(quelle, neu)
         _besitzer_uebertragen(ziel, neu)
     except Exception as e:
         _loesche_leise(neu)
         return Ergebnis(False, "Kopieren fehlgeschlagen (%s). Der alte Stand bleibt." % e, kurse)
     try:
+        if hasattr(os, "sync"):
+            os.sync()
         _loesche(sicherung)
         if ziel.exists():
             os.rename(str(ziel), str(sicherung))
@@ -142,7 +210,9 @@ def _loesche_leise(pfad: Path) -> None:
 def aktualisiere(stick: Path, ziel: Path = Path("/srv/foexlab"),
                  sicherung: Path = Path("/srv/foexlab.vorher")) -> Ergebnis:
     stick, ziel, sicherung = Path(stick), Path(ziel), Path(sicherung)
+    _schreibe_laeuft(stick)
     try:
+        _stelle_wieder_her(ziel, sicherung)
         erg = _ersetze(stick, ziel, sicherung)
     except Exception as e:  # nie mit Traceback enden
         erg = Ergebnis(False, "Unerwarteter Fehler (%s). Der alte Stand bleibt." % e)
@@ -159,7 +229,8 @@ def main(argv=None) -> int:
     if not (stick / ORDNER).exists():
         return 0  # gewöhnlicher Stick: nichts tun, nichts schreiben
     erg = aktualisiere(stick)
-    print(("OK: " if erg.ok else "Fehler: ") + erg.meldung)
+    text = ("OK: " if erg.ok else "Fehler: ") + erg.meldung
+    print(text.encode("utf-8", "backslashreplace").decode("utf-8"))
     return 0 if erg.ok else 1
 
 

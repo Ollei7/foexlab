@@ -68,10 +68,11 @@ Geprüft werden Startseite und Kurse, alle eingebundenen Dateien und der Abholdi
 
 Ohne Mac und ohne Netz: Der Pi übernimmt neue Inhalte direkt von einem USB-Stick.
 
-1. Am Computer mit Internet die Datei `foexlab-update.zip` von der Release-Seite auf GitHub laden.
-2. Die Zip-Datei entpacken und den Ordner `foexlab-update` auf den Stick kopieren. Auf dem Stick muss `foexlab-update/index.html` liegen. Der Stick darf FAT32, exFAT oder ext4 sein.
-3. Stick in den Pi stecken und etwa 30 Sekunden warten.
-4. Stick abziehen und am Computer die Datei `update.txt` auf dem Stick lesen: Dort steht, ob es geklappt hat (`OK` oder `Fehler` mit Grund) und welche Kurse jetzt auf dem Pi sind.
+1. Am Computer mit Internet die Datei `foexlab-update.zip` laden: https://github.com/Ollei7/foexlab/releases/tag/letzter-stand
+2. Die Zip-Datei entpacken und den Ordner `foexlab-update` auf den Stick kopieren. Auf dem Stick muss `foexlab-update/index.html` liegen, direkt im Hauptverzeichnis des Sticks. Achtung bei Windows „Alle extrahieren“: Das legt oft einen weiteren Ordner darum (`foexlab-update/foexlab-update/…`). Dann den inneren Ordner auf den Stick ziehen. Der Stick darf FAT32, exFAT oder ext4 sein.
+3. Stick in den Pi stecken und 1 bis 2 Minuten warten.
+4. Am Computer die Datei `update.txt` auf dem Stick lesen: Dort steht, ob es geklappt hat (`OK` oder `Fehler` mit Grund, eine Zeile je Problem) und welche Kurse jetzt auf dem Pi sind. Steht dort „Aktualisierung läuft“, noch warten. Fehlt die Datei oder ist sie alt, Stick ziehen und neu einstecken.
+5. Stick danach abziehen.
 
 Gut zu wissen:
 

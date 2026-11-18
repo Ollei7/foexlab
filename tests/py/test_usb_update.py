@@ -59,7 +59,8 @@ def test_symlink_im_stick_abbruch(tmp_path):
     (tmp_path / "geheim.txt").write_text("g")
     (q / "mzi" / "link.txt").symlink_to(tmp_path / "geheim.txt")
     ziel, sich = baue_alt(tmp_path)
-    assert any("Verknüpfung" in z for z in pruefe_quelle(q))
+    probleme = pruefe_quelle(q)
+    assert any("link.txt" in z and "Verknüpfung" in z for z in probleme)
     erg = aktualisiere(stick, ziel, sich)
     assert not erg.ok
     assert (ziel / "index.html").read_text() == "alt"
@@ -74,6 +75,10 @@ def test_symlink_ordner_und_index_abbruch(tmp_path):
     (echt / "index.html").write_text("e")
     (q / "kurs").symlink_to(echt)
     assert pruefe_quelle(q)
+
+
+# Hinweis: "../" kann in Verzeichnislisten nie als Name vorkommen; ein Ausbruch
+# ist nur über Symlinks möglich (oben abgedeckt), realpath-Prüfung ist zusätzlich.
 
 
 def test_leere_kursliste_abbruch(tmp_path):
@@ -139,3 +144,120 @@ def test_main_ohne_update_ordner_schreibt_nichts(tmp_path):
     (stick / "foto.jpg").write_text("x")
     assert usb_update.main([str(stick)]) == 0
     assert sorted(p.name for p in stick.iterdir()) == ["foto.jpg"]
+
+
+def test_eintrag_wird_zwischen_pruefung_und_kopie_zum_symlink(tmp_path, monkeypatch):
+    stick = tmp_path / "stick"
+    q = baue_quelle(stick)
+    (tmp_path / "geheim.txt").write_text("g")
+    ziel, sich = baue_alt(tmp_path)
+    echt = usb_update.pruefe_quelle
+
+    def pruefe_und_tausche(quelle):
+        r = echt(quelle)
+        (quelle / "mzi" / "index.html").unlink()
+        (quelle / "mzi" / "index.html").symlink_to(tmp_path / "geheim.txt")
+        return r
+
+    monkeypatch.setattr(usb_update, "pruefe_quelle", pruefe_und_tausche)
+    erg = aktualisiere(stick, ziel, sich)
+    assert not erg.ok
+    assert (ziel / "index.html").read_text() == "alt"
+    assert not sich.exists()
+    assert not Path(str(ziel) + ".neu").exists()
+
+
+def test_zu_wenig_platz(tmp_path, monkeypatch):
+    stick = tmp_path / "stick"
+    baue_quelle(stick)
+    ziel, sich = baue_alt(tmp_path)
+    DU = type("DU", (), {"free": 1024})
+    monkeypatch.setattr(usb_update.shutil, "disk_usage", lambda p: DU)
+    erg = aktualisiere(stick, ziel, sich)
+    assert not erg.ok and "Platz" in erg.meldung
+    assert (ziel / "index.html").read_text() == "alt"
+    assert not Path(str(ziel) + ".neu").exists()
+
+
+def test_wiederherstellung_nach_absturz(tmp_path):
+    stick = tmp_path / "stick"
+    baue_quelle(stick, index=False)  # Update scheitert, Wiederherstellung greift trotzdem
+    ziel, sich = baue_alt(tmp_path)
+    ziel.rename(sich)
+    assert not ziel.exists()
+    aktualisiere(stick, ziel, sich)
+    assert (ziel / "index.html").read_text() == "alt"
+    assert not sich.exists()
+
+
+def test_schon_aktuell_laesst_sicherung_unberuehrt(tmp_path):
+    stick = tmp_path / "stick"
+    baue_quelle(stick)
+    ziel, sich = baue_alt(tmp_path)
+    assert aktualisiere(stick, ziel, sich).ok
+    sich_inhalt = (sich / "index.html").read_text()
+    erg = aktualisiere(stick, ziel, sich)
+    assert erg.ok and "aktuell" in erg.meldung
+    assert (sich / "index.html").read_text() == sich_inhalt == "alt"
+
+
+def test_update_txt_laeuft_zuerst_dann_ergebnis(tmp_path, monkeypatch):
+    stick = tmp_path / "stick"
+    baue_quelle(stick)
+    ziel, sich = baue_alt(tmp_path)
+    (stick / "update.txt").write_text("uralt")
+    gesehen = []
+    echt = usb_update._ersetze
+
+    def spaet(*a):
+        gesehen.append((stick / "update.txt").read_text())
+        return echt(*a)
+
+    monkeypatch.setattr(usb_update, "_ersetze", spaet)
+    aktualisiere(stick, ziel, sich)
+    assert "läuft" in gesehen[0] and "uralt" not in gesehen[0]
+    assert "OK" in (stick / "update.txt").read_text()
+
+
+def test_eine_zeile_je_befund(tmp_path):
+    stick = tmp_path / "stick"
+    baue_quelle(stick, index=False, kurse=())
+    ziel, sich = baue_alt(tmp_path)
+    erg = aktualisiere(stick, ziel, sich)
+    assert len(erg.meldung.split("\n")) == 2
+    zeilen = (stick / "update.txt").read_text().splitlines()
+    assert sum("index.html" in z or "Kursordner" in z for z in zeilen) == 2
+
+
+def test_protokoll_mit_unlesbarem_namen(tmp_path):
+    stick = tmp_path / "stick"
+    stick.mkdir()
+    usb_update._schreibe_protokoll(stick, usb_update.Ergebnis(False, "a\udcff.txt: kaputt"))
+    assert "kaputt" in (stick / "update.txt").read_text()
+
+
+def test_nicht_utf8_dateiname_im_stick(tmp_path):
+    stick = tmp_path / "stick"
+    q = baue_quelle(stick)
+    try:
+        open(os.path.join(bytes(q), b"mzi", b"x\xff.txt"), "w").close()
+    except (OSError, ValueError):
+        pytest.skip("Dateisystem erlaubt keine Nicht-UTF-8-Namen")
+    ziel, sich = baue_alt(tmp_path)
+    erg = aktualisiere(stick, ziel, sich)  # darf nicht mit Traceback enden
+    assert erg.ok
+    assert (stick / "update.txt").read_text()
+
+
+def test_schreibgeschuetzter_stick_update_wird_trotzdem_angewendet(tmp_path, monkeypatch):
+    stick = tmp_path / "stick"
+    baue_quelle(stick)
+    ziel, sich = baue_alt(tmp_path)
+
+    def nein(*a):
+        raise OSError("schreibgeschützt")
+
+    monkeypatch.setattr(usb_update, "_schreibe_text", nein)
+    erg = aktualisiere(stick, ziel, sich)
+    assert erg.ok
+    assert (ziel / "index.html").read_text() == "neu-start"
