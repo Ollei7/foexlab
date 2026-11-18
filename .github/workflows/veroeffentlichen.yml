@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # Release und Tag aktualisieren
+      pages: write      # actions/configure-pages braucht die Pages-Schnittstelle
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4

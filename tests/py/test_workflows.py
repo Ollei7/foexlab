@@ -46,7 +46,7 @@ def test_veroeffentlichen():
     d = laden("veroeffentlichen.yml")
     assert d["on"]["push"]["branches"] == ["main"]
     assert d["permissions"] == {"contents": "read"}
-    assert d["jobs"]["bauen"]["permissions"] == {"contents": "write"}
+    assert d["jobs"]["bauen"]["permissions"] == {"contents": "write", "pages": "write"}
     assert d["jobs"]["veroeffentlichen"]["permissions"] == {"pages": "write", "id-token": "write"}
     alle = [u for j in d["jobs"].values() for u in benutzt(j)]
     for a in ("actions/configure-pages", "actions/upload-pages-artifact", "actions/deploy-pages"):
@@ -58,3 +58,9 @@ def test_veroeffentlichen():
     assert "letzter-stand" in b and "--clobber" in b
     upload = [s for s in d["jobs"]["bauen"]["steps"] if s.get("uses", "").startswith("actions/upload-pages-artifact")][0]
     assert upload["with"]["path"] == "dist"
+
+
+def test_job_mit_configure_pages_hat_pages_recht():
+    d = laden("veroeffentlichen.yml")
+    jobs = [j for j in d["jobs"].values() if any(u.startswith("actions/configure-pages@") for u in benutzt(j))]
+    assert jobs and all(j["permissions"].get("pages") in ("read", "write") for j in jobs)
