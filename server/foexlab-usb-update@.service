@@ -1,0 +1,13 @@
+[Unit]
+Description=foeXlab Update vom USB-Stick (%I)
+
+[Service]
+Type=oneshot
+# Stick nur zum Kopieren einhängen: nichts ausführbar, keine Gerätedateien
+ExecStartPre=/bin/mkdir -p /run/foexlab-usb
+ExecStartPre=/bin/mount -t vfat,exfat,ext4 -o rw,noexec,nosuid,nodev,sync /dev/%I /run/foexlab-usb
+ExecStart=/usr/bin/python3 /opt/foexlab/usb_update.py /run/foexlab-usb
+ExecStartPost=/bin/sync
+ExecStopPost=-/bin/sync
+ExecStopPost=-/bin/umount /run/foexlab-usb
+TimeoutStartSec=300

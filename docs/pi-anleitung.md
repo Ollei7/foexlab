@@ -64,7 +64,24 @@ python3 tools/pi_pruefen.py http://192.168.178.10
 
 Geprüft werden Startseite und Kurse, alle eingebundenen Dateien und der Abholdienst.
 
-## 5 Aufsteller drucken
+## 5 Inhalte aktualisieren mit USB-Stick
+
+Ohne Mac und ohne Netz: Der Pi übernimmt neue Inhalte direkt von einem USB-Stick.
+
+1. Am Computer mit Internet die Datei `foexlab-update.zip` von der Release-Seite auf GitHub laden.
+2. Die Zip-Datei entpacken und den Ordner `foexlab-update` auf den Stick kopieren. Auf dem Stick muss `foexlab-update/index.html` liegen. Der Stick darf FAT32, exFAT oder ext4 sein.
+3. Stick in den Pi stecken und etwa 30 Sekunden warten.
+4. Stick abziehen und am Computer die Datei `update.txt` auf dem Stick lesen: Dort steht, ob es geklappt hat (`OK` oder `Fehler` mit Grund) und welche Kurse jetzt auf dem Pi sind.
+
+Gut zu wissen:
+
+- Bei einem Fehler bleibt der alte Stand unverändert.
+- Der vorherige Stand liegt auf dem Pi in `/srv/foexlab.vorher` (nur eine Sicherung, sie wird beim nächsten Update ersetzt).
+- Ein Stick ohne Ordner `foexlab-update` wird ignoriert.
+- Vom Stick werden nur Dateien kopiert, nichts wird ausgeführt.
+- Nicht während eines Labortags aktualisieren (siehe Abschnitt 4).
+
+## 6 Aufsteller drucken
 
 1. `server.example.yml` nach `server.local.yml` kopieren und das WLAN-Passwort eintragen. Die Datei bleibt außerhalb von Git.
 2. Pro Experiment ein SVG erzeugen:
@@ -75,7 +92,7 @@ python3 tools/aufsteller.py kurse/mzi
 
 3. Das SVG im Browser öffnen und auf A5 quer drucken.
 
-## 6 Was tun, wenn …
+## 7 Was tun, wenn …
 
 | Problem | Prüfen |
 |---|---|
@@ -83,6 +100,7 @@ python3 tools/aufsteller.py kurse/mzi
 | „Keine Internetverbindung“-Meldung | Ist normal. „Trotzdem verbunden bleiben“ bzw. „Ohne Internet verwenden“ wählen. |
 | Abholcode schlägt fehl | Ist der Abholdienst aktiv? `ssh pi@192.168.178.10 systemctl status foexlab-abholdienst`. Neustart mit `sudo systemctl restart foexlab-abholdienst`. Achtung: Ein Neustart löscht alle abgelegten PDFs. |
 | iPad zeigt alte Fassung | Seite neu laden. Hilft das nicht: Safari-Tab schließen und den QR-Code erneut scannen. |
+| Update per Stick klappt nicht | `update.txt` auf dem Stick lesen. Steht dort nichts: Dateisystem prüfen (FAT32, exFAT oder ext4) und ob der Ordner `foexlab-update` direkt auf dem Stick liegt, nicht in einem weiteren Ordner. |
 | Viele Geräte, Verbindung bricht ab | Mehr als etwa 30 Geräte gleichzeitig vermeiden. Labor-iPads, die gerade nicht gebraucht werden, aus dem WLAN nehmen. |
 
 ## Datenschutz
