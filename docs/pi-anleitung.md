@@ -51,13 +51,11 @@ Nicht während eines Labortags: Geänderte Überschriften trennen die Verbindung
 
 Mit dem Laptop in zwei Schritten (Mac und Linux; unter Windows fehlt `rsync`, dort den USB-Stick in Abschnitt 5 benutzen oder WSL):
 
-1. **Zu Hause oder im Büro, mit Internet:** den neuesten Stand laden. Das speichert `~/foexlab-update.zip`.
+1. **Zu Hause oder im Büro, mit Internet:** den neuesten Stand laden und prüfen. Das speichert `~/foexlab-update.zip` und kopiert noch nichts auf den Pi.
 
    ```bash
    python3 tools/pi_aktualisieren.py --laden
    ```
-
-   Ist der Pi nicht erreichbar, bricht das Kopieren mit einer Meldung ab. Die geladene Datei bleibt trotzdem liegen.
 
 2. **Im Labor, im WLAN „foeXlab“ (ohne Internet):** denselben Befehl ohne `--laden` ausführen. Er entpackt und prüft das Zip, kopiert es per `rsync` auf den Pi (`pi@192.168.178.10`, anderer Pi mit `--pi benutzer@adresse`, andere Datei mit `--zip pfad`) und prüft danach den Pi.
 

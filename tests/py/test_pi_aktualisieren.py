@@ -123,3 +123,28 @@ def test_rsync_fehlschlag(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(pa.subprocess, "run", lambda cmd, **k: R())
     assert pa.main(["--zip", str(z)]) == 1
     assert "WLAN" in capsys.readouterr().out
+
+
+def test_laden_nur_herunterladen(tmp_path, monkeypatch, capsys):
+    ziel = tmp_path / "u.zip"
+    mache_zip(tmp_path / "quelle.zip", GUT)
+    monkeypatch.setattr(pa, "lade", lambda z: ziel.write_bytes((tmp_path / "quelle.zip").read_bytes()))
+    aufrufe = []
+    monkeypatch.setattr(pa.subprocess, "run", lambda *a, **k: aufrufe.append(a))
+    assert pa.main(["--laden", "--zip", str(ziel)]) == 0
+    assert aufrufe == []
+    assert "ohne --laden" in capsys.readouterr().out
+
+
+def test_laden_falsches_zip(tmp_path, monkeypatch):
+    ziel = tmp_path / "u.zip"
+    monkeypatch.setattr(pa, "lade", lambda z: mache_zip(ziel, {"foexlab-update/x.txt": "1"}))
+    assert pa.main(["--laden", "--zip", str(ziel)]) == 1
+
+
+def test_ssh_fehlt(tmp_path, monkeypatch, capsys):
+    z = mache_zip(tmp_path / "u.zip", GUT)
+    monkeypatch.setattr(pa.shutil, "which", lambda n: None if n == "ssh" else "/usr/bin/" + n)
+    assert pa.main(["--zip", str(z)]) == 2
+    out = capsys.readouterr().out
+    assert "ssh" in out and "USB" in out

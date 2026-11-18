@@ -4,7 +4,7 @@
 Zu Hause/im Büro (mit Internet):   python3 tools/pi_aktualisieren.py --laden
 Im Labor (WLAN foeXlab, kein Netz): python3 tools/pi_aktualisieren.py
 
-Ablauf: Zip laden (nur mit --laden), sicher entpacken, prüfen, per rsync auf den Pi
+Ablauf: Mit --laden: nur laden und prüfen. Sonst: Zip sicher entpacken, prüfen, per rsync auf den Pi
 kopieren, danach tools/pi_pruefen.py. Ende: 0 = fertig, 1 = fehlgeschlagen, 2 = Einrichtung/Aufruf.
 """
 import argparse
@@ -93,7 +93,12 @@ def main(argv=None):
         if args.laden:
             _ausgabe("Lade das Update aus dem Internet …")
             lade(zip_pfad)
-        elif not zip_pfad.is_file():
+            with tempfile.TemporaryDirectory() as tmp:
+                entpacke_und_pruefe(zip_pfad, tmp)
+            _ausgabe("Heruntergeladen und geprüft: %s. Im Labor (WLAN „foeXlab“) jetzt "
+                     "ohne --laden ausführen." % zip_pfad)
+            return 0
+        if not zip_pfad.is_file():
             raise Fehler("Die Datei %s gibt es nicht. Zuerst mit Internet "
                          "„python3 tools/pi_aktualisieren.py --laden“ ausführen." % zip_pfad)
         fehlt = [n for n in ("rsync", "ssh") if not shutil.which(n)]
