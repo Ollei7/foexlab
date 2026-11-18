@@ -115,7 +115,7 @@ def test_einrichtung_fehlt(monkeypatch, capsys):
     code = kp.main([os.path.join(FAELLE, "gut")])
     out = capsys.readouterr().out
     assert code == 2 and "Traceback" not in out
-    assert "pip3 install -r requirements.txt" in out and "npm install" in out
+    assert "-m pip install -r requirements.txt" in out and "npm install" in out
 
 
 def test_node_modules_fehlt_nur_hinweis_ohne_tests(monkeypatch):
@@ -131,7 +131,7 @@ def test_cli_letzte_zeile():
     r = lauf("ziel-fehlt")
     assert r.returncode == 1
     zeilen = r.stdout.rstrip("\n").splitlines()
-    assert zeilen[-1] == "noch nicht bereit (1 Punkte)" or zeilen[-1].startswith("noch nicht bereit (")
+    assert zeilen[-1] == "noch nicht bereit (1 Punkt)"
     assert any(z.startswith("– ") for z in zeilen[:-1])
 
 
@@ -148,3 +148,73 @@ def test_doppelte_kartentitel_im_kapitel():
 def test_knopf_fehlt():
     b = bericht("knopf-fehlt")
     assert gefunden(b, "Knopf", "gibt-es-nicht", "Kapitel 2"), texte(b)
+
+
+def test_mc_sperrt_ohne_antworten():
+    b = bericht("mc-ohne-antworten")
+    assert gefunden(b, "Sicherungsfrage", "gar keine Antworten"), texte(b)
+    assert not b.bereit
+
+
+def test_quiz_frage_ohne_optionen():
+    b = bericht("quiz-ohne-optionen")
+    assert gefunden(b, "Quiz-Serie", "keine richtige Antwort"), texte(b)
+
+
+def test_kartenregel_im_nachschlagekapitel_wird_geprueft():
+    b = bericht("nachschlagen-kartenregel")
+    assert gefunden(b, "gibt/esnicht", "02-nach.md"), texte(b)
+
+
+def test_leerer_kurs():
+    b = bericht("leer")
+    assert gefunden(b, "keine Karten"), texte(b)
+
+
+def test_werkzeug_test_muss_dateinamen_oder_namen_nennen(tmp_path):
+    tests_dir = tmp_path / "t"; tests_dir.mkdir()
+    (tests_dir / "a.test.js").write_text("// x.js wird hier nur erwähnt: xy", encoding="utf-8")
+    m = kp.Modell(os.path.join(FAELLE, "werkzeug-ohne-test"), "werkzeug-ohne-test")
+    m.lies_quelle()
+    assert gefunden_in(kp.pruefe_werkzeuge(m, str(tests_dir)), "x.js")
+    (tests_dir / "a.test.js").write_text("ladeDatei(w, 'kurse/k/werkzeuge/x.js')", encoding="utf-8")
+    assert kp.pruefe_werkzeuge(m, str(tests_dir)) == []
+    (tests_dir / "a.test.js").write_text("arten['x']", encoding="utf-8")
+    assert kp.pruefe_werkzeuge(m, str(tests_dir)) == []
+
+
+def gefunden_in(befunde, *teile):
+    return any(all(t in f.text for t in teile) for f in befunde)
+
+
+@pytest.mark.parametrize("fall,teil", [("kopf-kaputt", "kein gültiges YAML"), ("kopf-liste", "kein gültiges YAML"), ("nicht-utf8", "UTF-8"),
+                                       ("bedingung-liste", "muss ein Text sein"), ("kursyml-liste", "kurs.yml")])
+def test_kaputte_quelle_wird_befund_mit_datei(fall, teil):
+    b = bericht(fall)
+    assert len(b.befunde) == 1 and teil in b.befunde[0].text and ".md" in b.befunde[0].ort + "kurs.yml".replace("kurs.yml", ".md"), texte(b)
+    assert "Traceback" not in b.befunde[0].text
+
+
+def test_knopf_oeffnet_karte_ist_kein_befund():
+    # Freigabe läuft über knopf:<id>; oeffnet ist nur das Sprungziel, eine Karten-Kennung springt zwar nicht, sperrt aber niemanden aus (mzi nutzt das)
+    assert bericht("knopf-karte").befunde == []
+
+
+def test_felder_auf_karte_ohne_aufgaben_oeffnet_sofort():
+    assert gefunden(bericht("platzhalterkarte"), "öffnet sich sofort")
+
+
+def test_unicode_ausgabe_ohne_fehler(monkeypatch):
+    import io
+    roh = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(roh, encoding="ascii"))
+    assert kp.main([os.path.join(FAELLE, "ziel-fehlt"), "--ohne-tests"]) == 1
+    sys.stdout.flush()
+    assert b"noch nicht bereit" in roh.getvalue()
+
+
+def test_pruefwerkzeug_fehler_ohne_traceback(monkeypatch, capsys):
+    monkeypatch.setattr(kp, "pruefe_medien", lambda m: 1 / 0)
+    assert kp.main([os.path.join(FAELLE, "gut"), "--ohne-tests"]) == 2
+    out = capsys.readouterr().out
+    assert "Traceback" not in out and "melden" in out

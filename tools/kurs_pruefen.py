@@ -19,6 +19,15 @@ PAKETE = (("PIL", "Pillow"), ("markdown", "markdown"), ("yaml", "PyYAML"))
 MATHJAX_HINWEIS = "MathJax fehlt – einmal `npm install` ausführen (im Ordner foexlab). Ohne MathJax bleiben Formeln unlesbar."
 
 
+WINDOWS = sys.platform.startswith("win")
+PIP_BEFEHL = "py -m pip install -r requirements.txt" if WINDOWS else "python3 -m pip install -r requirements.txt"
+NODE_BEFEHL = ("Befehl: brew install node" if sys.platform == "darwin" else "Bitte Node.js von https://nodejs.org installieren.")
+
+
+class Pruefwerkzeugfehler(Exception):
+    """Unerwarteter Fehler im Prüfwerkzeug selbst (nicht im Kurs)."""
+
+
 class Eingabefehler(Exception):
     """Falsche Eingabe (Kurs nicht gefunden, ungültige Kennung): wird als Klartext gemeldet, Exit 2."""
 
@@ -64,9 +73,9 @@ def pruefe_einrichtung(tests=True):
     for modul, name in PAKETE:
         try: importlib.import_module(modul)
         except ImportError:
-            probleme.append(f"Das Python-Paket „{name}“ fehlt. Befehl: pip3 install -r requirements.txt")
+            probleme.append(f"Das Python-Paket „{name}“ fehlt. Befehl: {PIP_BEFEHL}")
     if not shutil.which("node"):
-        probleme.append("Node.js fehlt (wird für Formeln und Tests gebraucht). Befehl: brew install node")
+        probleme.append(f"Node.js fehlt (wird für Formeln und Tests gebraucht). {NODE_BEFEHL}")
     if tests and not os.path.isdir(NODE_MODULES):
         probleme.append("Die Zusatzpakete für Formeln und Tests sind nicht installiert. Befehl (im Ordner foexlab): npm install")
     return probleme
@@ -101,6 +110,7 @@ class Modell:
         self.knoepfe = {}         # Knopf-ID → Karten-ID
         self.gruppen = []         # Antwortgruppen mit richtig/falsch (Kontrollfragen, Quiz-Fragen)
         self.meldungen = []       # Rohausgabe der Engine
+        self.quellfehler = []     # unlesbare Quelldateien
 
     # --- Quelle
     def lies_quelle(self):
@@ -109,7 +119,15 @@ class Modell:
         for fn in sorted(os.listdir(adir)):
             if not fn.endswith(".md"): continue
             pfad = os.path.join(adir, fn)
-            sec = parse_file(pfad)
+            try:
+                sec = parse_file(pfad)
+                if not isinstance(sec["fm"], dict): raise ValueError("kopf")
+            except UnicodeDecodeError:
+                self.quellfehler.append(Befund("Die Datei ist nicht als UTF-8 gespeichert (Umlaute sind kaputt) – bitte als UTF-8 speichern", fn)); continue
+            except Exception:
+                self.quellfehler.append(Befund("Der Kopfbereich (zwischen den beiden ---) ist kein gültiges YAML – er muss aus Zeilen der Form „titel: Text“ bestehen", fn)); continue
+            if not isinstance(sec["fm"].get("oeffnet_nach", ""), str):
+                self.quellfehler.append(Befund("oeffnet_nach muss ein Text sein, z. B. „felder:kapitel/karte“", self.ort_abschnitt(dict(pfad=pfad, fn=fn)))); continue
             roh = self._rohkennungen(sec)
             ids_vergeben(sec, fn)
             sec.update(fn=fn, pfad=pfad, ab=re.sub(r"^\d+-", "", fn[:-3]), roh=roh)
@@ -201,10 +219,11 @@ class Seite(HTMLParser):
             k["felder"].append(f)
             self.gruppe = None
             if a.get("data-fx-kontrolle") == "1":
-                self.gruppe = dict(feld=f["id"], titel=f["titel"], serie=False, werte=[]); self.m.gruppen.append(self.gruppe)
+                self.gruppe = dict(feld=f["id"], titel=f["titel"], serie=False, mc=False, werte=[]); self.m.gruppen.append(self.gruppe)
         if "fx-quizfrage" in klassen:
             n = sum(1 for g in self.m.gruppen if g["serie"] and g["feld"] == k["felder"][-1]["id"]) + 1 if k["felder"] else 1
-            self.gruppe = dict(feld=k["felder"][-1]["id"] if k["felder"] else "", titel=f"Frage {n}", serie=True, werte=[]); self.m.gruppen.append(self.gruppe)
+            self.gruppe = dict(feld=k["felder"][-1]["id"] if k["felder"] else "", titel=f"Frage {n}", serie=True, mc=True, werte=[]); self.m.gruppen.append(self.gruppe)
+        if a.get("data-type") == "mc" and self.gruppe is not None: self.gruppe["mc"] = True
         if a.get("data-fx-platzhalter") == "1": self.plat = ""
         if tag == "span" and "qname" in klassen and self.plat == "": self.plat = None; self._lese_plat = True
         if a.get("data-knopf-id"):
@@ -273,7 +292,9 @@ def _bedingung_pruefen(m, bed, wer, ort):
     if art == "felder":
         if not [f for f in k["felder"] if not f["optional"]]:
             was = " (dort steht nur ein Platzhalter)" if k["platzhalter"] else ""
-            return Befund(f"{wer} wartet auf „{ziel}“ – eine Karte ohne Aufgaben{was}. Die Gruppe käme nie weiter", ort), None
+            if k["platzhalter"] or not k["felder"]:
+                return Befund(f"{wer} zeigt auf „{ziel}“ – eine Karte ohne Aufgaben{was}. Die Bedingung öffnet sich sofort und wirkt nicht; gemeint war wohl eine Karte mit Aufgaben", ort), None
+            return Befund(f"{wer} zeigt auf „{ziel}“, dort sind alle Aufgaben optional. Die Bedingung öffnet sich sofort und wirkt nicht", ort), None
     else:
         if not [f for f in k["felder"] if f["art"] == "quizserie"]:
             return Befund(f"{wer} wartet auf das Quiz „{ziel}“, aber diese Karte enthält keine Quiz-Serie – die Gruppe käme nie weiter", ort), None
@@ -286,10 +307,11 @@ def pruefe_freischaltung(m):
     erstes = m.abschnitte[0] if m.abschnitte else None
     for sec in m.abschnitte:
         ab, fm = sec["ab"], sec["fm"]
-        if fm.get("nachschlagen") or fm.get("versteckt"): continue   # Nachschlageseiten sind immer offen
+        if fm.get("versteckt"): continue
+        nachschlagen = bool(fm.get("nachschlagen"))   # Nachschlageseiten sind immer offen: nur die Bedingung des Kapitels entfällt
         regel = m.regeln["abschnitte"].get(ab, {})
         wer = m.kapitel(sec)
-        if regel.get("oeffnet_nach"):
+        if regel.get("oeffnet_nach") and not nachschlagen:
             if sec is erstes:
                 out.append(Befund(f"{wer} ist das erste Kapitel und hat eine Bedingung („{regel['oeffnet_nach']}“) – dann käme keine Gruppe je hinein", m.ort_abschnitt(sec)))
             f, ziel = _bedingung_pruefen(m, regel["oeffnet_nach"], wer, m.ort_abschnitt(sec))
@@ -347,12 +369,13 @@ def pruefe_kontrollfragen(m):
     """Fragen, die sperren oder ein Quiz tragen, brauchen mindestens eine richtige Antwort."""
     out = []
     for g in m.gruppen:
-        if g["werte"] and not any(w > 0 for w in g["werte"]):
+        if g["mc"] and not any(w > 0 for w in g["werte"]):
+            leer = " (es gibt gar keine Antworten)" if not g["werte"] else ""
             if g["serie"]:
                 kid = g["feld"].rsplit("/", 1)[0]
-                out.append(Befund(f"{g['titel']} der Quiz-Serie „{m.karten_quelle[kid][1]['title'] if kid in m.karten_quelle else kid}“ hat keine richtige Antwort – das Quiz ließe sich nie bestehen", m.ort_karte(kid)))
+                out.append(Befund(f"{g['titel']} der Quiz-Serie „{m.karten_quelle[kid][1]['title'] if kid in m.karten_quelle else kid}“ hat keine richtige Antwort{leer} – das Quiz ließe sich nie bestehen", m.ort_karte(kid)))
             else:
-                out.append(Befund(f"Die Frage „{g['titel']}“ sperrt die folgenden Aufgaben, hat aber keine richtige Antwort ([x] fehlt) – die Gruppe käme nie weiter", m.ort_feld(g["feld"])))
+                out.append(Befund(f"Die Frage „{g['titel']}“ sperrt die folgenden Aufgaben, hat aber keine richtige Antwort{leer} ([x] fehlt) – die Gruppe käme nie weiter", m.ort_feld(g["feld"])))
     return out
 
 
@@ -409,8 +432,9 @@ def pruefe_werkzeuge(m, tests_dir=None):
                 except (OSError, UnicodeDecodeError): pass
     if os.path.isdir(ordner):
         for f in sorted(os.listdir(ordner)):
-            if f.endswith(".js") and f[:-3] not in inhalt:
-                out.append(Befund(f"Das Werkzeug werkzeuge/{f} hat keinen Test – es fehlt eine Datei in tests/js/{m.id}/, die „{f[:-3]}“ prüft", f"werkzeuge/{f}"))
+            stem = f[:-3]
+            if f.endswith(".js") and not (f"werkzeuge/{stem}.js" in inhalt or f"'{stem}'" in inhalt or f'"{stem}"' in inhalt):
+                out.append(Befund(f"Das Werkzeug werkzeuge/{f} hat keinen Test – es fehlt eine Datei in tests/js/{m.id}/, die „werkzeuge/{f}“ lädt oder „{f[:-3]}“ (in Anführungszeichen) benennt", f"werkzeuge/{f}"))
     return out
 
 
@@ -454,16 +478,25 @@ def pruefe_medien(m):
 
 
 def pruefe_kursdatei(m):
-    """kurs.yml: Kennung gültig und gleich dem Ordnernamen."""
+    """kurs.yml: lesbar, Kennung gültig und gleich dem Ordnernamen."""
     import yaml
-    try: kurs = yaml.safe_load(open(os.path.join(m.kurs_dir, "kurs.yml"), encoding="utf-8")) or {}
-    except yaml.YAMLError: return [Befund("kurs.yml lässt sich nicht lesen (Einrückung oder Anführungszeichen prüfen)", "kurs.yml")]
+    try:
+        kurs = yaml.safe_load(open(os.path.join(m.kurs_dir, "kurs.yml"), encoding="utf-8")) or {}
+        if not isinstance(kurs, dict): raise ValueError
+    except (yaml.YAMLError, ValueError, UnicodeDecodeError):
+        return [Befund("kurs.yml lässt sich nicht lesen – sie muss aus Zeilen der Form „titel: Text“ bestehen (als UTF-8 gespeichert)", "kurs.yml")]
     out = []
     if not kurs.get("titel"): out.append(Befund("In kurs.yml fehlt der Titel (titel: …)", "kurs.yml"))
     kid = kurs.get("id")
     if kid is not None and str(kid) != m.id:
         out.append(Befund(f"Die Kennung in kurs.yml („{kid}“) weicht vom Ordnernamen („{m.id}“) ab – beide müssen gleich sein", "kurs.yml"))
     return out
+
+
+def pruefe_leer(m):
+    """Ein Kurs ohne Karten wäre eine leere Seite."""
+    if m.karten: return []
+    return [Befund("Der Kurs hat keine Karten – im Ordner abschnitte muss mindestens eine .md-Datei mit einer ##-Überschrift stehen", "abschnitte")]
 
 
 def platzhalter_liste(m):
@@ -482,18 +515,29 @@ def pruefe(kurs_dir, tests=True):
     if b.einrichtung: return b
     m = Modell(kurs_dir, kid)
     try:
+        b.befunde += pruefe_kursdatei(m)
+        if b.befunde: return b
         m.lies_quelle()
-        with tempfile.TemporaryDirectory(prefix="kurs_pruefen_") as tmp:
-            warnungen = baue_und_lese(m, tmp)
-    except Exception as e:   # kaputte Quelle (z. B. Einrückung in der Kopfzeile) – nie ein Traceback für Autoren
-        b.befunde.append(Befund(f"Der Kurs lässt sich nicht bauen: {type(e).__name__}: {e}", "Kurs"))
-        return b
-    b.rohausgabe = list(m.meldungen)
-    b.befunde += pruefe_kursdatei(m)
-    b.befunde += pruefe_warnungen(m, warnungen, b.einrichtung)
-    for check in (pruefe_freischaltung, pruefe_kontrollfragen, pruefe_eindeutigkeit, pruefe_werkzeuge, pruefe_medien):
-        b.befunde += check(m)
-    b.platzhalter = platzhalter_liste(m)
+        if m.quellfehler:
+            b.befunde += m.quellfehler
+            return b
+        if not m.abschnitte:
+            b.befunde += pruefe_leer(m)
+            return b
+        try:
+            with tempfile.TemporaryDirectory(prefix="kurs_pruefen_") as tmp:
+                warnungen = baue_und_lese(m, tmp)
+        except Exception as e:   # kaputte Quelle, die die Engine nicht baut – nie ein Traceback für Autoren
+            b.rohausgabe = [f"{type(e).__name__}: {e}"]
+            b.befunde.append(Befund("Der Kurs lässt sich nicht bauen (technischer Grund mit --details); bitte Kopfbereiche und Überschriften prüfen", "Kurs"))
+            return b
+        b.rohausgabe = list(m.meldungen)
+        b.befunde += pruefe_warnungen(m, warnungen, b.einrichtung)
+        for check in (pruefe_leer, pruefe_freischaltung, pruefe_kontrollfragen, pruefe_eindeutigkeit, pruefe_werkzeuge, pruefe_medien):
+            b.befunde += check(m)
+        b.platzhalter = platzhalter_liste(m)
+    except Exception as e:
+        raise Pruefwerkzeugfehler(f"Beim Prüfen von {kurs_dir} ist im Prüfwerkzeug selbst etwas schiefgegangen ({type(e).__name__}: {e}). Bitte melden") from e
     return b
 
 
@@ -510,7 +554,8 @@ def ausgeben(b, details=False, ausgabe=print):
     if b.platzhalter:
         ausgabe("Platzhalter (noch zu bauen):")
         for p in b.platzhalter: ausgabe(f"– {p}")
-    ausgabe("bereit" if b.bereit else f"noch nicht bereit ({len(b.befunde)} Punkte)")
+    n = len(b.befunde)
+    ausgabe("bereit" if b.bereit else f"noch nicht bereit ({n} {'Punkt' if n == 1 else 'Punkte'})")
 
 
 def main(argv=None):
@@ -519,13 +564,16 @@ def main(argv=None):
     ap.add_argument("--ohne-tests", action="store_true", help="Werkzeug-Tests nicht ausführen")
     ap.add_argument("--details", action="store_true", help="auch die Rohausgabe des Bauens zeigen")
     args = ap.parse_args(argv)
+    for strom in (sys.stdout, sys.stderr):
+        try: strom.reconfigure(errors="replace")
+        except Exception: pass
     try:
         b = pruefe(args.kurs, tests=not args.ohne_tests)
-    except Eingabefehler as e:
+        ausgeben(b, args.details)
+    except (Eingabefehler, Pruefwerkzeugfehler) as e:
         print(str(e)); return 2
     except Exception as e:
-        print(f"Beim Prüfen ist etwas Unerwartetes schiefgegangen ({type(e).__name__}: {e}). Bitte die Betreuung des foeXlab informieren."); return 2
-    ausgeben(b, args.details)
+        print(f"Beim Prüfen ist etwas Unerwartetes schiefgegangen ({type(e).__name__}). Bitte die Betreuung des foeXlab informieren."); return 2
     return 2 if b.einrichtung else (0 if b.bereit else 1)
 
 
