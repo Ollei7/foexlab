@@ -37,7 +37,7 @@ def kurse_aus_dateien(dateien, kurse):
 
 
 def geaenderte_dateien(basis, root=ROOT):
-    r = subprocess.run(["git", "diff", "--name-only", "-z", basis + "...HEAD"], cwd=root, capture_output=True, text=True)
+    r = subprocess.run(["git", "diff", "--name-only", "--no-renames", "-z", basis + "...HEAD"], cwd=root, capture_output=True, text=True)
     if r.returncode != 0:
         zeilen = (r.stderr or "").strip().splitlines()
         raise ValueError("Der Vergleich mit '%s' ist nicht möglich (%s)." % (basis, zeilen[-1] if zeilen else "unbekannter Fehler"))

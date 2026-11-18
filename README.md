@@ -32,9 +32,8 @@ Neue Experimentseiten entstehen im Ordner dieses Repositorys mit Claude Code: Or
 2. Settings → General → Pull Requests: „Allow auto-merge“ einschalten (außerdem „Allow squash merging“; „Automatically delete head branches“ ist praktisch).
 3. Settings → Branches → Regel für `main` anlegen: „Require a pull request before merging“ (keine Freigabe nötig, also „Required approvals“ auf 0), „Require status checks to pass before merging“ mit dem Check `pruefen` (erscheint in der Auswahl erst nach dem ersten Lauf eines Pull Requests).
 4. Settings → Pages → Build and deployment → Source: „GitHub Actions“.
-5. Settings → Actions → General → Workflow permissions: „Read and write permissions“ (sonst kann `veroeffentlichen.yml` die Datei `foexlab-update.zip` nicht an das Release `letzter-stand` hängen).
 
-Die Prüfung (`.github/workflows/pruefen.yml`) baut alle Kurse, prüft jeden geänderten Kurs mit `tools/kurs_pruefen.py` und lässt alle Tests laufen. Ein Zweig `kurs/…` darf nur den eigenen Kurs ändern (`tools/kurs_pr_regeln.py`); Änderungen an `engine/`, `server/`, `tools/`, `.github/` oder fremden Kursen macht Oliver auf einem anderen Zweig. Nach jedem Übernehmen in `main` veröffentlicht `.github/workflows/veroeffentlichen.yml` die Seite und aktualisiert `foexlab-update.zip` im Release `letzter-stand`.
+Die Prüfung (`.github/workflows/pruefen.yml`) baut alle Kurse, prüft jeden geänderten Kurs mit `tools/kurs_pruefen.py` und lässt alle Tests laufen. Ein Zweig `kurs/…` darf nur den eigenen Kurs ändern (`tools/kurs_pr_regeln.py`); Änderungen an `engine/`, `server/`, `tools/`, `.github/` oder fremden Kursen macht Oliver auf einem anderen Zweig. Diese Regel ist ein Netz gegen Versehen, keine Zugriffskontrolle: wer Schreibrechte hat, könnte sie im selben Pull Request ändern. Nach jedem Übernehmen in `main` veröffentlicht `.github/workflows/veroeffentlichen.yml` die Seite und aktualisiert `foexlab-update.zip` im Release `letzter-stand`.
 
 ## Ordner
 

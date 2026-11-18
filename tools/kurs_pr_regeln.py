@@ -15,10 +15,7 @@ KATALOG = ".claude/skills/foexlab-kurs/referenz/werkzeuge.md"
 PRAEFIX = "kurs/"
 
 
-def _kurs_id_aus_zweig(zweig, kurse, dateien):
-    """Eigene Kurs-ID: längste ID, mit der der Zweigname beginnt (kurs/<id> oder kurs/<id>-…);
-    bei neuen Kursen die ID, die in den Dateien vorkommt und zum Zweignamen passt."""
-    name = zweig[len(PRAEFIX):]
+def _alle_ids(kurse, dateien):
     ids = set(kurse)
     for d in dateien:
         t = d.split("/")
@@ -26,7 +23,14 @@ def _kurs_id_aus_zweig(zweig, kurse, dateien):
             ids.add(t[1])
         elif len(t) >= 4 and t[:2] == ["tests", "js"]:
             ids.add(t[2])
-    treffer = [i for i in ids if name == i or name.startswith(i + "-")]
+    return ids
+
+
+def _kurs_id_aus_zweig(zweig, kurse, dateien):
+    """Eigene Kurs-ID: längste ID, mit der der Zweigname beginnt (kurs/<id> oder kurs/<id>-…);
+    bei neuen Kursen die ID, die in den Dateien vorkommt und zum Zweignamen passt."""
+    name = zweig[len(PRAEFIX):]
+    treffer = [i for i in _alle_ids(kurse, dateien) if name == i or name.startswith(i + "-")]
     return max(treffer, key=len) if treffer else None
 
 
@@ -34,7 +38,9 @@ def verstoesse(zweig, dateien, kurse):
     """Liste deutscher Meldungen; leer = erlaubt."""
     if not zweig.startswith(PRAEFIX):
         return []
-    eigener = _kurs_id_aus_zweig(zweig, kurse, [d for d in dateien if posixpath.normpath(d) == d])
+    sauber_liste = [d for d in dateien if posixpath.normpath(d) == d]
+    eigener = _kurs_id_aus_zweig(zweig, kurse, sauber_liste)
+    ids = _alle_ids(kurse, sauber_liste)
     meldungen = []
     for datei in dateien:
         if datei == KATALOG:
@@ -46,7 +52,7 @@ def verstoesse(zweig, dateien, kurse):
                 continue
             if len(t) >= 4 and t[:2] == ["tests", "js"] and t[2] == eigener:
                 continue
-            if len(t) == 3 and t[:2] == ["tests", "py"] and gk.kurs_zu_datei(datei, {eigener}) == eigener:
+            if len(t) == 3 and t[:2] == ["tests", "py"] and gk.kurs_zu_datei(datei, ids) == eigener:
                 continue
         if sauber and (t[0] in ("engine", "server", "tools", ".github")):
             grund = "gehört zur Technik des Projekts"

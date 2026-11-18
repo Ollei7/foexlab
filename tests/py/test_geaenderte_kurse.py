@@ -64,3 +64,26 @@ def test_andere_zweige_sind_frei():
 def test_pfad_tricks():
     assert regeln.verstoesse("kurs/mzi", ["kurse/mzi/../../engine/build.py"], KURSE) != []
     assert regeln.verstoesse("kurs/mzi", ["kurse/mzix/kurs.yml"], KURSE) != []
+
+
+def test_testdatei_gehoert_zum_laengsten_passenden_kurs():
+    kurse = {"mzi", "mzi-x"}
+    assert gk.kurs_zu_datei("tests/py/test_mzi_x_a.py", kurse) == "mzi-x"
+    assert regeln.verstoesse("kurs/mzi", ["kurse/mzi/kurs.yml", "tests/py/test_mzi_x_a.py"], kurse) != []
+    assert regeln.verstoesse("kurs/mzi", ["kurse/mzi/kurs.yml", "tests/py/test_mzi_struktur.py"], kurse) == []
+
+
+def test_umbenennung_ueber_die_grenze_wird_gesehen(tmp_path):
+    def git(*a):
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t"] + list(a), cwd=tmp_path, check=True, capture_output=True)
+    git("init", "-q", "-b", "main")
+    (tmp_path / "engine").mkdir(); (tmp_path / "kurse" / "mzi").mkdir(parents=True)
+    (tmp_path / "engine" / "x.py").write_text("print('inhalt der datei ist lang genug')\n" * 5)
+    (tmp_path / "kurse" / "mzi" / "kurs.yml").write_text("a: 1\n")
+    git("add", "."); git("commit", "-q", "-m", "a")
+    git("checkout", "-q", "-b", "kurs/mzi")
+    git("mv", "engine/x.py", "kurse/mzi/x.py"); git("commit", "-q", "-m", "b")
+    dateien = gk.geaenderte_dateien("main", root=str(tmp_path))
+    assert "engine/x.py" in dateien and "kurse/mzi/x.py" in dateien
+    v = regeln.verstoesse("kurs/mzi", dateien, {"mzi"})
+    assert len(v) == 1 and "engine/x.py" in v[0]

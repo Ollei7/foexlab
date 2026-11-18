@@ -45,13 +45,16 @@ def test_python39_zusatzjob():
 def test_veroeffentlichen():
     d = laden("veroeffentlichen.yml")
     assert d["on"]["push"]["branches"] == ["main"]
-    assert d["permissions"] == {"contents": "write", "pages": "write", "id-token": "write"}
+    assert d["permissions"] == {"contents": "read"}
+    assert d["jobs"]["bauen"]["permissions"] == {"contents": "write"}
+    assert d["jobs"]["veroeffentlichen"]["permissions"] == {"pages": "write", "id-token": "write"}
     alle = [u for j in d["jobs"].values() for u in benutzt(j)]
     for a in ("actions/configure-pages", "actions/upload-pages-artifact", "actions/deploy-pages"):
         assert any(u.startswith(a + "@v") for u in alle), a
     b = "\n".join(befehle(j) for j in d["jobs"].values())
     assert "engine/build.py --alle" in b
     assert "foexlab-update/" not in b and "foexlab-update.zip" in b
+    assert "git tag -f letzter-stand" in b and "push -f origin refs/tags/letzter-stand" in b
     assert "letzter-stand" in b and "--clobber" in b
     upload = [s for s in d["jobs"]["bauen"]["steps"] if s.get("uses", "").startswith("actions/upload-pages-artifact")][0]
     assert upload["with"]["path"] == "dist"
