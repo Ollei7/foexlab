@@ -1,0 +1,89 @@
+name: Pull Request prüfen
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruefen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Der Name "pruefen" ist der Pflicht-Check im Branch-Schutz (README, Abschnitt "Für Oliver").
+  pruefen:
+    name: pruefen
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Python-Pakete installieren
+        run: python3 -m pip install -r requirements.txt pytest
+
+      - name: Node-Pakete installieren
+        run: npm ci
+
+      - name: Kurs-Zweig darf nur den eigenen Kurs ändern
+        env:
+          ZWEIG: ${{ github.head_ref }}
+          BASIS: origin/${{ github.base_ref }}
+        run: python3 tools/kurs_pr_regeln.py "$ZWEIG" "$BASIS"
+
+      - name: Alle Kurse bauen
+        run: python3 engine/build.py --alle
+
+      - name: Geänderte Kurse prüfen
+        env:
+          BASIS: origin/${{ github.base_ref }}
+        run: |
+          kurse="$(python3 tools/geaenderte_kurse.py "$BASIS")"
+          if [ -z "$kurse" ]; then
+            echo "Kein Kurs geändert."
+            exit 0
+          fi
+          status=0
+          for id in $kurse; do
+            echo "=== Kurs $id ==="
+            python3 tools/kurs_pruefen.py "$id" || status=1
+          done
+          exit $status
+
+      - name: Python-Tests
+        run: python3 -m pytest
+
+      - name: JavaScript-Tests
+        run: npm test
+
+  # Die Autorinnen und Autoren haben Python 3.9 auf dem Mac: der Code muss dort laufen. Kein Pflicht-Check.
+  python39:
+    name: python39
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: pip
+
+      - run: python3 -m pip install -r requirements.txt pytest
+
+      - run: npm ci
+
+      - run: python3 -m pytest

@@ -1,0 +1,72 @@
+name: Veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: veroeffentlichen
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: python3 -m pip install -r requirements.txt
+
+      - run: npm ci
+
+      - name: Alle Kurse bauen
+        run: python3 engine/build.py --alle
+
+      - name: Zip für den Raspberry Pi packen
+        run: |
+          rm -rf foexlab-update foexlab-update.zip
+          cp -R dist foexlab-update
+          zip -qr foexlab-update.zip foexlab-update
+
+      - name: Zip an Release "letzter-stand" hängen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view letzter-stand >/dev/null 2>&1; then
+            gh release create letzter-stand --title "Letzter Stand" \
+              --notes "Wird bei jeder Änderung an main automatisch ersetzt. foexlab-update.zip enthält den fertigen Stand für den Raspberry Pi." \
+              --target "$GITHUB_SHA"
+          fi
+          gh release upload letzter-stand foexlab-update.zip --clobber
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.seite.outputs.page_url }}
+    steps:
+      - id: seite
+        uses: actions/deploy-pages@v4

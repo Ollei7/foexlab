@@ -22,6 +22,20 @@ Tests: `python3 -m pytest tests/py` und `npm test`.
 Inhaltsabgleich eines Kurses gegen eine Lesefassung (Auszug als Markdown): `python3 tools/inhaltsabgleich.py <auszug.md> kurse/mzi --ausnahmen kurse/mzi/abgleich-ausnahmen.txt`.
 Gegen einen Ordner mit Markdown-Quellen (`# Teil`, `## Abschnitt`), abschnittsweise: `python3 tools/inhaltsabgleich.py --quelle-md "MZI Kurs Test/Inhalte" kurse/mzi --ausnahmen kurse/mzi/abgleich-ausnahmen.txt` (Ausnahmen dort je Zeile „Datei: Abschnitt“ oder „Datei: Abschnitt | Satzanfang“, jeweils mit „ # Grund“). Exit 0: nichts fehlt; 1: Sätze fehlen; 2: falsche Eingabe.
 
+## Für das Team: neue Experimentseite
+
+Neue Experimentseiten entstehen im Ordner dieses Repositorys mit Claude Code: Ordner öffnen, Claude Code starten und beschreiben, was die Seite können soll – der Skill `foexlab-kurs` führt durch Aufbau, Prüfung und Veröffentlichung. Dafür brauchst du Schreibrechte im Repository; frag Oliver, er lädt dich ein. Claude legt einen Zweig `kurs/<id>` an und stellt einen Pull Request; sobald die automatische Prüfung grün ist, wird er von selbst übernommen. Die Vorschau deiner Seite findest du danach unter `https://ollei7.github.io/foexlab/<id>/` (wenige Minuten nach dem Übernehmen). Wie die fertigen Seiten auf den Raspberry Pi kommen, steht in `docs/pi-anleitung.md`.
+
+## Für Oliver: GitHub einrichten (einmalig)
+
+1. Settings → Collaborators: Teammitglieder mit Schreibrechten einladen.
+2. Settings → General → Pull Requests: „Allow auto-merge“ einschalten (außerdem „Allow squash merging“; „Automatically delete head branches“ ist praktisch).
+3. Settings → Branches → Regel für `main` anlegen: „Require a pull request before merging“ (keine Freigabe nötig, also „Required approvals“ auf 0), „Require status checks to pass before merging“ mit dem Check `pruefen` (erscheint in der Auswahl erst nach dem ersten Lauf eines Pull Requests).
+4. Settings → Pages → Build and deployment → Source: „GitHub Actions“.
+5. Settings → Actions → General → Workflow permissions: „Read and write permissions“ (sonst kann `veroeffentlichen.yml` die Datei `foexlab-update.zip` nicht an das Release `letzter-stand` hängen).
+
+Die Prüfung (`.github/workflows/pruefen.yml`) baut alle Kurse, prüft jeden geänderten Kurs mit `tools/kurs_pruefen.py` und lässt alle Tests laufen. Ein Zweig `kurs/…` darf nur den eigenen Kurs ändern (`tools/kurs_pr_regeln.py`); Änderungen an `engine/`, `server/`, `tools/`, `.github/` oder fremden Kursen macht Oliver auf einem anderen Zweig. Nach jedem Übernehmen in `main` veröffentlicht `.github/workflows/veroeffentlichen.yml` die Seite und aktualisiert `foexlab-update.zip` im Release `letzter-stand`.
+
 ## Ordner
 
 | Ordner | Inhalt |
