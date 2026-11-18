@@ -222,3 +222,7 @@ body.fx-betreuung .fx-lehrkraft::before{content:"Für Lehrkräfte";display:block
 .ddimg.fx-ziehen .spot::before{transform:none;left:2px;top:1px}
 @media (max-width:480px){.ddimg.fx-ziehen .spot{min-width:52px;min-height:24px;border-width:1px}.ddimg.fx-ziehen .spot::before{font-size:8px}.spot .fx-chip{font-size:9px;padding:2px 3px}}
 .fx-ziehen .spot:has(select.ok){border-color:#2E8B57}.fx-ziehen .spot:has(select.bad){border-color:#C0392B}
+
+/* Platzhalter für noch fehlende Simulationen (kein Feld) */
+.fx-platzhalter{border:2px dashed var(--linie);border-left:3px solid #F58411;background:#fff}
+.fx-platzhalter-hinweis{margin:var(--space-2) 0;font-weight:700;color:var(--qf-navy)}

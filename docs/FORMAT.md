@@ -68,6 +68,7 @@ Alle Eingaben werden automatisch im Browser gespeichert und erscheinen im Protok
 | `:::info`, `:::merksatz` | ruhige Kästen an Ort und Stelle im Text (auch im Karten-Intro und in `{.info}`-Fragen) |
 | `:::lehrkraft` … `:::` | Hinweise für Lehrkräfte (Leitfragen, Erwartungshorizont); nur im Betreuungsmodus sichtbar, nie im Protokoll oder PDF |
 | `:::mehr Titel` | aufklappbare Zusatzkarte |
+| `### Titel {.platzhalter}` + Absatz | Markiert eine Simulation, die noch nicht gebaut ist: Kasten mit Titel, „Diese Simulation folgt noch.“ und dem Absatz. Kein Feld: nichts wird gespeichert, nichts steht im Protokoll/PDF oder unter „Noch offen“, es zählt nicht im Kartenfortschritt und sperrt nie (`sperrt` wird mit Warnung ignoriert) |
 | `### Titel {.umschalter}` mit `:::ansicht Name` | Knöpfe wechseln zwischen Abbildungen/Texten; kein Protokolleintrag |
 | `### Titel {.knopf oeffnet="<abschnitt-id>" id="<knopf-id>"}` | Knopf, der einen Abschnitt öffnet (`oeffnet_nach: knopf:<id>`) und dorthin springt |
 | `### Titel {.werkzeug name="<modul>" modus="…"}` | Feld aus `kurse/<kurs>/werkzeuge/*.js`; das Modul registriert die Feldart per `FX.felder.registriere(art, {init, laden, wert, leer, protokoll, …})` (alle Einträge unter „Werkzeug-Schnittstelle“). Weitere Attribute (`modus="eve"`) landen als Konfiguration im Feld. `protokoll(el, wert)` liefert Teile `{typ:'text'|'tabelle'|'grafik'|'striche', …}` für Ergebnisseite und PDF. Dateien mit „kern“ im Namen werden zuerst geladen |

@@ -8,7 +8,7 @@ from .fragen import antwort_html, feld, loesung_html, render_q, tipps_html
 from .quelle import split_blocks
 
 esc = lambda s: html.escape(s or "", quote=True)
-NEUE = ("messtabelle", "vermutung", "foto", "skizze", "umschalter", "knopf", "werkzeug", "checkliste")
+NEUE = ("messtabelle", "vermutung", "foto", "skizze", "umschalter", "knopf", "werkzeug", "checkliste", "platzhalter")
 DIAGRAMM_OPTIONEN = ("x", "y", "ausgleich")
 AUSGLEICH = ("linear", "ursprung", "keiner")
 
@@ -120,7 +120,15 @@ def render_baustein(ctx, q, number):
     if "knopf" in q["cls"]: return render_knopf(ctx, q, text)
     if "werkzeug" in q["cls"]: return render_werkzeug(ctx, q, text)
     if "checkliste" in q["cls"]: return render_checkliste(ctx, q, blk)
+    if "platzhalter" in q["cls"]: return render_platzhalter(ctx, q, text)
     raise ValueError(q["cls"])
+
+
+def render_platzhalter(ctx, q, text):
+    """### … {.platzhalter}: markiert eine noch fehlende Simulation; bewusst kein Feld (kein Speichern, kein Protokoll, nie sperrend)."""
+    if "sperrt" in q["cls"]: ctx.warnings.append(f"{q['title']}: Platzhalter kann nichts sperren – sperrt wird ignoriert")
+    return (f'<div class="q fx-baustein fx-platzhalter" data-fx-platzhalter="1"><div class="qhead"><span class="qname">{esc(q["title"])}</span></div>'
+            f'<p class="fx-platzhalter-hinweis">Diese Simulation folgt noch.</p><div class="qtext">{text}</div></div>')
 
 
 LISTENPUNKT = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.*\S)\s*$")

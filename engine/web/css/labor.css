@@ -54,3 +54,5 @@ html[data-labor="1"] .fx-ziehhinweis{color:#B4B8C4}
 html[data-labor="1"] .qhead,html[data-labor="1"] .qhead .qname{color:#E2E2E2}
 html[data-labor="1"] .fx-vermutung .qname{color:#E59AAA}
 html[data-labor="1"] .fx-ziehen .spot:has(select.ok){border-color:#5FBF86}html[data-labor="1"] .fx-ziehen .spot:has(select.bad){border-color:#F08A7E}
+html[data-labor="1"] .fx-platzhalter{background:#222;color:#D8D8D8;border-color:#555}
+html[data-labor="1"] .fx-platzhalter-hinweis{color:#F5A55A}
