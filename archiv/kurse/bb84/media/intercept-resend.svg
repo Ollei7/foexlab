@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-label="Intercept-Resend-Angriff: Alice sendet ein Photon, Eve fängt es ab, misst es und sendet ein neues Photon an Bob">
+<rect width="760" height="250" fill="#fff"/>
+<g font-family="Source Sans 3, Helvetica Neue, Arial, sans-serif" fill="#33416E" text-anchor="middle">
+<circle cx="90" cy="95" r="42" fill="#3F9AD6"/><text x="90" y="106" font-size="32" font-weight="700" fill="#fff">A</text>
+<text x="90" y="165" font-size="20" font-weight="700">Alice</text><text x="90" y="188" font-size="15" fill="#6B7080">sendet Photon</text>
+<circle cx="380" cy="95" r="42" fill="#CF6F82"/><text x="380" y="106" font-size="32" font-weight="700" fill="#fff">E</text>
+<text x="380" y="165" font-size="20" font-weight="700">Eve</text><text x="380" y="188" font-size="15" fill="#6B7080">fängt ab, misst, sendet neu</text>
+<circle cx="670" cy="95" r="42" fill="#33416E"/><text x="670" y="106" font-size="32" font-weight="700" fill="#fff">B</text>
+<text x="670" y="165" font-size="20" font-weight="700">Bob</text><text x="670" y="188" font-size="15" fill="#6B7080">empfängt Eves Photon</text>
+<line x1="140" y1="95" x2="326" y2="95" stroke="#F58411" stroke-width="4"/><polyline points="314,86 326,95 314,104" fill="none" stroke="#F58411" stroke-width="3"/>
+<line x1="430" y1="95" x2="616" y2="95" stroke="#F58411" stroke-width="4"/><polyline points="604,86 616,95 604,104" fill="none" stroke="#F58411" stroke-width="3"/>
+</g></svg>

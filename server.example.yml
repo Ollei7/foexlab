@@ -1,0 +1,5 @@
+# Kopie als server.local.yml anlegen (nicht im Git) und Werte eintragen.
+adresse: "http://192.168.178.10"
+wlan:
+  ssid: "foeXlab"
+  passwort: "HIER-EINTRAGEN"

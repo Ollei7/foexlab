@@ -1,0 +1,20 @@
+# foeXlab Lab-Server: statische Seiten aus /srv/foexlab, Abholdienst auf 127.0.0.1:8081.
+# Kein log-Block: Caddy schreibt keine Zugriffsprotokolle.
+:80 {
+	root * /srv/foexlab
+
+	@abholung path /api/* /abholen /abholen/*
+	handle @abholung {
+		request_body {
+			max_size 26MB
+		}
+		reverse_proxy 127.0.0.1:8081
+	}
+
+	handle {
+		# HTML immer neu prüfen, damit iPads nach einem Update die neue Fassung laden
+		@html path / *.html */
+		header @html Cache-Control "no-cache"
+		file_server
+	}
+}

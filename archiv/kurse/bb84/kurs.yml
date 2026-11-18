@@ -1,0 +1,12 @@
+titel: Quantenschlüsselverteilung mit BB84
+untertitel: Experimentierworkshop im foeXlab
+id: bb84
+musterloesungen: false
+lizenz: "Material: Dominik Spicka, Bachelorarbeit 2026, Leibniz Universität Hannover"
+auf_einen_blick:
+  definitionen:
+    Quantenzustand: def-zustand
+    Präparation: def-praeparation
+    Messung: def-messung
+    Superposition: def-superposition
+  zusammenfassung: abschluss/das-hast-du-in-diesem-workshop-gelernt

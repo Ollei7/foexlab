@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-label="[+] Messapparat">
+<rect width="720" height="300" fill="#fff"/>
+<g font-family="Source Sans 3, Helvetica Neue, Arial, sans-serif" fill="#33416E">
+<text x="20" y="32" font-size="22" font-weight="700">[+] Messapparat</text>
+<text x="44" y="206" font-size="16" fill="#6B7080">Photon</text>
+<line x1="20" y1="178" x2="120" y2="178" stroke="#3F9AD6" stroke-width="4"/><circle cx="34" cy="178" r="7" fill="#3F9AD6"/>
+<polyline points="112,170 124,178 112,186" fill="none" stroke="#3F9AD6" stroke-width="3"/>
+<rect x="138" y="138" width="86" height="80" rx="8" fill="#F7F7F5" stroke="#33416E" stroke-width="2"/>
+<g transform="rotate(0 181 178)" stroke="#33416E" stroke-width="3" stroke-linecap="round" fill="none"><line x1="181" y1="152" x2="181" y2="204"/><polyline points="175,160 181,152 187,160"/><polyline points="175,196 181,204 187,196"/></g>
+<text x="181" y="238" font-size="15" text-anchor="middle">Pol.-Dreher · 0°</text>
+<line x1="224" y1="178" x2="400" y2="178" stroke="#3F9AD6" stroke-width="4"/>
+<rect x="400" y="138" width="80" height="80" fill="#F7F7F5" stroke="#33416E" stroke-width="2"/>
+<line x1="400" y1="218" x2="480" y2="138" stroke="#33416E" stroke-width="3"/>
+<text x="440" y="252" font-size="15" text-anchor="middle">Polarisationsstrahlteiler</text>
+<line x1="440" y1="138" x2="440" y2="72" stroke="#CF6F82" stroke-width="4"/>
+<line x1="480" y1="178" x2="600" y2="178" stroke="#3F9AD6" stroke-width="4"/>
+<rect x="404" y="40" width="72" height="32" rx="6" fill="#33416E"/><text x="440" y="62" font-size="16" fill="#fff" text-anchor="middle">Detektor 0</text>
+<rect x="600" y="162" width="100" height="32" rx="6" fill="#33416E"/><text x="650" y="184" font-size="16" fill="#fff" text-anchor="middle">Detektor 1</text>
+<text x="456" y="112" font-size="18" font-weight="700" fill="#CF6F82">|↑⟩</text>
+<text x="532" y="166" font-size="18" font-weight="700" fill="#3F9AD6">|→⟩</text>
+</g></svg>

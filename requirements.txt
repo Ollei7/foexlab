@@ -1,0 +1,5 @@
+markdown
+pyyaml
+pillow
+segno
+pytest

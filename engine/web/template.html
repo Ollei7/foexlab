@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%%TITLE%%</title>
+%%CSS%%
+</head>
+<body>
+<div class="fx-oben" role="navigation" aria-label="Kursleiste">
+  <span class="fx-herkunft">%%KOPF_HERKUNFT%%</span>
+  <button type="button" class="fx-zur-uebersicht fx-oben-knopf">Übersicht</button>
+  <span class="fx-ort">Übersicht</span>
+  <button type="button" class="fx-labor fx-oben-knopf" aria-pressed="false">Labormodus</button>
+</div>
+<div class="fx-fortschritt-balken" aria-hidden="true"><i></i></div>
+<div id="fx-warnung" role="alert" hidden></div>
+
+<main id="main">
+<section id="fx-start" class="fx-ansicht">
+  <div class="fx-starttitel">
+    %%STARTLOGO%%
+    <div><h1>%%TITLE%%</h1>
+    %%SUBLINE%%</div>
+  </div>
+  <div class="fx-gruppe-box">
+    <label for="fx-gruppe">Namen der Gruppe</label>
+    <input id="fx-gruppe" type="text" autocomplete="off" placeholder="z. B. Ada, Emmy, Lise">
+    <p class="note">Bleibt nur auf diesem Gerät und erscheint im Protokoll.</p>
+  </div>
+  <button type="button" id="fx-weiter-wo" class="fx-knopf fx-haupt" hidden>Weitermachen, wo ihr wart</button>
+  %%UEBERSICHT%%
+  <div class="fx-start-knoepfe">
+    <a class="fx-knopf fx-haupt" href="#ergebnis">Ergebnisse und Protokoll</a>
+    <button type="button" id="fx-neue-gruppe" class="fx-knopf">Neue Gruppe beginnen</button>
+  </div>
+  %%SKIP%%
+</section>
+%%MAIN%%
+<section id="fx-gesperrt" class="fx-ansicht" hidden>
+  <p class="fx-schloss" aria-hidden="true">🔒</p>
+  <h2>Noch gesperrt</h2>
+  <p class="fx-grund" role="status"></p>
+  <button type="button" class="fx-knopf fx-haupt fx-zur-uebersicht">Zur Übersicht</button>
+</section>
+<section id="fx-ergebnis" class="fx-ansicht" hidden>
+  <p class="fx-kicker">%%TITLE%%</p><h2>Ergebnisse</h2>
+  <div id="fx-ergebnis-inhalt"></div>
+</section>
+</main>
+
+<nav class="fx-unten" aria-label="Kartennavigation" hidden>
+  <button type="button" class="fx-zurueck-karte">Zurück</button>
+  <button type="button" class="fx-zur-uebersicht">Übersicht</button>
+  <button type="button" class="fx-weiter-karte">Weiter</button>
+</nav>
+
+<footer class="fx-fuss">
+  <div class="fx-fusslogos">%%FUSSLOGOS%%</div>
+  <p>%%FUSSZEILE%%</p>
+</footer>
+
+<dialog id="dlg"><div class="dbar"><span id="dlgt"></span><button type="button" class="dlgx" id="dlgx">Schließen</button></div><iframe id="dlgf" title="Inhalt"></iframe></dialog>
+%%JS%%
+</body>
+</html>

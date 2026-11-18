@@ -1,0 +1,56 @@
+/* ===== Labormodus: dunkel und gedimmt für abgedunkelte Räume ===== */
+html[data-labor="1"]{color-scheme:dark}
+html[data-labor="1"] body{background:#111;color:#D8D8D8}
+html[data-labor="1"] h1,html[data-labor="1"] h2,html[data-labor="1"] h3,html[data-labor="1"] h4,html[data-labor="1"] h5{color:#E2E2E2}
+html[data-labor="1"] .fx-fortschritt-balken{background:#2A2A2A}
+html[data-labor="1"] .fx-fuss{border-color:#333}
+html[data-labor="1"] .fx-fusslogo,html[data-labor="1"] .fx-startlogo{filter:brightness(.7)}
+html[data-labor="1"] .fx-oben{background:#000;border-color:#333;color:#D8D8D8}
+html[data-labor="1"] .fx-herkunft{color:#D8D8D8}
+html[data-labor="1"] .fx-oben-knopf{background:#000;border-color:#888;color:#D8D8D8}
+html[data-labor="1"] .fx-oben-knopf[aria-pressed="true"]{background:rgba(245,132,17,.7);border-color:transparent;color:#000}
+html[data-labor="1"] .fx-karte,html[data-labor="1"] .q,html[data-labor="1"] .fx-kartenliste a,html[data-labor="1"] .fx-unten,html[data-labor="1"] .fx-schritt-nav{background:#1B1B1B;color:#D8D8D8;box-shadow:none;border-color:#333}
+html[data-labor="1"] .q.desc{background:transparent}
+html[data-labor="1"] .fx-gruppe-box,html[data-labor="1"] .fx-tipp,html[data-labor="1"] .gfb,html[data-labor="1"] .ofb{background:#222;color:#D8D8D8}
+html[data-labor="1"] input,html[data-labor="1"] textarea,html[data-labor="1"] select{background:#000;color:#E2E2E2;border-color:#555}
+html[data-labor="1"] .fx-unten button,html[data-labor="1"] .fx-knopf,html[data-labor="1"] .fx-knoepfe button,html[data-labor="1"] button.check,html[data-labor="1"] button.reset{background:#1B1B1B;color:#D8D8D8;border-color:#666}
+html[data-labor="1"] .fx-unten .fx-weiter-karte,html[data-labor="1"] .fx-knopf.fx-haupt{background:rgba(245,132,17,.7);color:#000;border-color:transparent}
+html[data-labor="1"] img,html[data-labor="1"] video,html[data-labor="1"] .fx-diagramm svg{filter:brightness(.8)}
+html[data-labor="1"] .fx-flaeche{background:#2A2A2A}
+html[data-labor="1"] a{color:#F5A55A}
+html[data-labor="1"] .fx-kartenliste a,html[data-labor="1"] .fx-ausgleich,html[data-labor="1"] .fx-schritt-zahl,html[data-labor="1"] .unit{color:#E2E2E2}
+html[data-labor="1"] .fx-tabelle th{background:#262626;color:#E2E2E2}
+html[data-labor="1"] .fx-stift canvas{background-color:#CFCFCF}
+html[data-labor="1"] .fx-modus button,html[data-labor="1"] .fx-stift-leiste button{background:#1B1B1B;color:#D8D8D8;border-color:#666}
+html[data-labor="1"] .fx-modus button[aria-pressed="true"],html[data-labor="1"] .fx-stift-leiste button[aria-pressed="true"]{background:rgba(245,132,17,.7);color:#000}
+html[data-labor="1"] #fx-gesperrt{background:#1B1B1B;border-color:#333}
+html[data-labor="1"] .fx-grund,html[data-labor="1"] .fx-sperre,html[data-labor="1"] .fx-sperre-klein{color:#E59AAA}
+html[data-labor="1"] .fx-info,html[data-labor="1"] .fx-mehr,html[data-labor="1"] .fx-loesung,html[data-labor="1"] .fx-merksatz,html[data-labor="1"] .fx-lehrkraft{background:#222;color:#D8D8D8;border-color:#333}
+html[data-labor="1"] .fx-loesung-knopf,html[data-labor="1"] .fx-quizpunkte button{background:#1B1B1B;color:#D8D8D8;border-color:#666}
+html[data-labor="1"] .fx-umschalter-knoepfe button[aria-pressed="true"],html[data-labor="1"] .fx-quizpunkt.aktuell button{background:rgba(245,132,17,.7);color:#000}
+html[data-labor="1"] .fx-ht-gleich.fx-ok,html[data-labor="1"] .fx-sk-mark.fx-ok,html[data-labor="1"] tr.fx-sk-zeile.fx-ok td{background:#1F3A24}
+html[data-labor="1"] .fx-ht-gleich.fx-fehler,html[data-labor="1"] .fx-sk-mark.fx-fehler,html[data-labor="1"] .fx-sk-diff.fx-fehler,html[data-labor="1"] tr.fx-sk-zeile.fx-fehler td{background:#46222A}
+html[data-labor="1"] .fx-knopf[aria-pressed="true"],html[data-labor="1"] .fx-sk-reiter[aria-selected="true"]{background:rgba(245,132,17,.7);color:#000}
+html[data-labor="1"] .fx-p8-tabelle tr.fx-p8-ja{background:#1F3A24}html[data-labor="1"] .fx-p8-tabelle tr.fx-p8-nein{background:#46222A}
+html[data-labor="1"] .fx-karte table th{background:#262626;color:#E2E2E2}html[data-labor="1"] .fx-karte table th,html[data-labor="1"] .fx-karte table td{border-color:#333}
+html[data-labor="1"] .fx-bd-karte,html[data-labor="1"] .fx-bd-feld{background:#1B1B1B;color:#D8D8D8;border-color:#666}
+html[data-labor="1"] .fx-bd-karte[aria-pressed="true"]{background:rgba(245,132,17,.7);color:#000}
+html[data-labor="1"] .fx-bd-wurzel{background:#D8D8D8}html[data-labor="1"] .fx-bd-linien line{stroke:#888}
+html[data-labor="1"] .fx-feld[data-fx-festgehalten] textarea{background:#1A2033;color:#E2E2E2;border-color:#555}
+html[data-labor="1"] .fx-festhinweis{color:#AEB9E0}
+html[data-labor="1"] .fx-sperrhinweis{color:#E59AAA}
+html[data-labor="1"] .fx-nach-versuchen{background:#2B2216;color:#E2E2E2}
+html[data-labor="1"] body.fx-betreuung .fx-lehrkraft{background:#222;color:#D8D8D8;border-color:#444}
+html[data-labor="1"] body.fx-betreuung .fx-lehrkraft::before{color:#8CC2EA}
+html[data-labor="1"] .res.fx-aufgeloest{color:#B4B8C4}
+html[data-labor="1"] .fx-status{color:#D8D8D8}
+html[data-labor="1"] .fx-checkliste .fx-haken{color:#D8D8D8}
+html[data-labor="1"] .ddimg.fx-ziehen .spot{background:rgba(30,30,30,.75);border-color:#8CC2EA}
+html[data-labor="1"] .ddimg.fx-ziehen .spot.over,html[data-labor="1"] .fx-ablage.over{background:#3A2E1C;border-color:#F58411}
+html[data-labor="1"] .fx-ablage{background:#1B1B1B;border-color:#444}
+html[data-labor="1"] .fx-chip{background:#222;color:#E2E2E2;border-color:#8CC2EA}
+html[data-labor="1"] .fx-chip.sel{background:#F58411;border-color:#F58411;color:#000}
+html[data-labor="1"] .fx-ziehhinweis{color:#B4B8C4}
+html[data-labor="1"] .qhead,html[data-labor="1"] .qhead .qname{color:#E2E2E2}
+html[data-labor="1"] .fx-vermutung .qname{color:#E59AAA}
+html[data-labor="1"] .fx-ziehen .spot:has(select.ok){border-color:#5FBF86}html[data-labor="1"] .fx-ziehen .spot:has(select.bad){border-color:#F08A7E}

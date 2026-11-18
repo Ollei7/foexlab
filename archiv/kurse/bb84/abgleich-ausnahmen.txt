@@ -1,0 +1,61 @@
+# Ausnahmen für tools/inhaltsabgleich.py – Satzanfang # Grund
+# Eine Zeile je Satzanfang der Lesefassung (mindestens 20 Zeichen), der im Kurs bewusst anders steht oder nur durch den Umbruch der Lesefassung abweicht.
+# Aufruf: python3 tools/inhaltsabgleich.py <…>/bb84-workshop-website-2026-10-22.pdf.auszug.md kurse/bb84 --ausnahmen kurse/bb84/abgleich-ausnahmen.txt
+
+Das Schlüsselverteilungsproblem Warum ist sicher # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Eine wichtige Nachricht Alice möchte Bob eine ve # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+KLARTEXT + SCHLÜSSEL "Triff mich morgen" z. # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Buchstabenverschiebung +3 → GEHEIMTEXT ENTSCHLÜS # Tippfehler C (Cäsar-Beispiel plk → plfk)
+SCHLÜSSELLÄNGE SCHLÜSSEL Genau so lang wie die N # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Das Problem ist … weil … Das Problem ist … weil # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Das Einzelphoton und sein Zustand Das Photon ist # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Mithilfe der vier möglichen Winkeleinstellungen # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Im folgenden ist der Aufbau des [+]-Messapparats # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+beantwortet die beiden Fragen zum Zustand |↑⟩, s # Tippfehler C
+📋 Aufgaben zum Experiment FRAGEN ZU A1: ZUSTAND # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Detektionswahrscheinlichkeit D1: 100 % Detektion # A1/A2: Deutung D0/D1 vertauscht
+Photonen und beantwortet die beiden Fragen zum Z # Tippfehler C
+Detektionswahrscheinlichkeit D0: 100 % Detektion # A1/A2: Deutung D0/D1 vertauscht
+📋 Aufgaben zum Experiment FRAGEN ZU A1: BEOBACHT # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Weiter → Beantworte zuerst die letzte Frage, um # UI-Text der alten Website
+|↑ ⟩ Basiszustand |↑⟩ in [×]-Basis |↗ ⟩ Gesamtzu # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Messung in [×]-Basis: 50 % |↗⟩ | 50 % |↘⟩ Ein Mi # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Messung liest einen Zustand aus und kollabiert d # A3: Quiz Kap. 2, Frage 1
+Das Quantenobjekt befindet sich gleichzeitig in # A4: Quiz Kap. 2, Frage 5
+📋 Protokoll-Übersicht ← Zurück zur Durchführung # UI-Text der alten Website
+Das BB84-Protokoll Wie Alice und Bob mit Quanten # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Ablauf des BB84 Protokolls anhand eines Beispiel # A6: Nachschlagen, Schritt 1
+In unserem Beispiel wurde zufällig folgendes bes # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+▶ Nächster Schritt ↺ Neustart 0 / 8 Photonen # UI-Text der alten Website
+So ist es möglich nur mit 2 Ziffern ganze Worte # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Per Binäraddition wird der erste Buchstabe H (Bi # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+← Zurück zur Durchführung 🧪 Kapitel 3 von 4 # UI-Text der alten Website
+Durchführung: Das BB84-Protokoll Führe das Proto # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Bearbeitet die Aufgaben nach und nach und haltet # Tippfehler C
+Gruppe Alice Gruppe Bob Aufgabe 2: Verschlüsselt # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Klickt, wenn ihr die Tabelle voll habt, auf das # UI-Text der alten Website
+Diese werden automatisch vom System an den beste # UI-Text der alten Website
+Sobald mindestens 5 Schlüsselbits vorhanden und # UI-Text der alten Website
+Schlüssel: 🔓 Der Lauscher (Eve) Du kennst jetzt # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Sowie rechts einem Sender, der ein neues Photon # A5: Eve-Infokarte
+E B ⟶ Eve ⟶ Bob Alice fängt ab, misst, empfängt # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Aufgabe 3: BB84 mit Eve Ihr wisst jetzt, wie Eve # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Besprecht eure Ergebnisse Alice Bob Eve Alice wü # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Frage 1: Fehlerrate Wie viel Prozent der Schlüss # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Fehlerrate: 0 % Frage 2: Ursache der Fehler Waru # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Baumdiagramm öffnen Klicken, um das interaktive # UI-Text der alten Website
+Notiert eure Schätzung: Eure Schätzung (Anzahl B # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Anzahl Testbits auswählen 0 Testbits 🔒 Erst Schä # UI-Text der alten Website
+Beispiele aus echten Experimenten: Klickt auf ei # A9: Aufgabe 4, feste Beispielwerte durch Zufallsversuch ersetzt
+4 Schlüsselbits 10 Schlüsselbits 50 Schlüsselbit # A9: Aufgabe 4, feste Beispielwerte durch Zufallsversuch ersetzt
+Das Original Um einen Quantenzustand zu "lesen", # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Ob eine Kopie gemacht wurde, messen. # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+perfekte Kopie ohne diesen Eingriff ist physikal # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+Experiment abschließen → Kapitel 4 freischalten # UI-Text der alten Website
+Abschluss Wo lässt sich das heute Gelernte wirkl # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+An einigen Stellen muss man daher relativieren: # A7: Grenzen des Analogieexperiments
+STRECKENLÄNGE KANALVERLUST QBER km dB 79 25,49 ~ # Layout der Lesefassung: Überschrift, Beschriftung oder Raster klebt am Satz (Inhalt ist vorhanden)
+📄 Deine Definitionen als PDF speichern Unten sie # UI-Text der alten Website
+Das PDF enthält außerdem eine kurze Zusammenfass # UI-Text der alten Website
+Klick auf „Als PDF speichern" und du hast alles # UI-Text der alten Website
+QUANTENZUSTAND noch nicht ausgefüllt PRÄPARATION # UI-Text der alten Website

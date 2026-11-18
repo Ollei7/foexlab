@@ -1,0 +1,12 @@
+# Abschnitte der Quelle "MZI einzelne Photonen/Inhalte", die bewusst nicht in den Kurs übernommen wurden.
+# Format: "Abschnitt" oder "Datei: Abschnitt" (Dateiname ohne .md), optional " # Grund".
+# "Datei: Abschnitt | Satzanfang" entschuldigt nur Sätze, die so beginnen.
+4-sicherung: Einleitung # Sicherung läuft über die Engine-Seite (Stopp-Karten), nicht über eigenen Text
+4-sicherung: Zwischenstand # Engine-Funktion Zwischenstand sichern/laden hat eigene Texte
+4-sicherung: Willkommen # Engine-Dialog beim Wiederöffnen
+4-sicherung: Neue Gruppe # Engine-Funktion Zurücksetzen
+5-hintergrund: Fußzeile # Fußzeile der Engine-Seite
+5-hintergrund: Hintergrund | Die Seiten werden nacheinander freigeschaltet. # Bedienungsabsatz ersetzt (Spec 5.6)
+5-hintergrund: Hintergrund | Mit #lehrkraft am Ende der Adresse # Bedienungsabsatz ersetzt (Spec 5.6)
+5-hintergrund: Hintergrund | html#lehrkraft) sind alle Seiten # Bedienungsabsatz ersetzt (Spec 5.6)
+5-hintergrund: Hintergrund | Alle Eingaben und Messungen bleiben im Browser # Bedienungsabsatz ersetzt (Spec 5.6)

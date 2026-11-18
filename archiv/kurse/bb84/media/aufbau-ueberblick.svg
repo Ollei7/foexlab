@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="Alice sendet Photonen über den Quantenkanal an Bob; Eve könnte dazwischen lauschen; die Basen werden über einen öffentlichen klassischen Kanal verglichen">
+<rect width="760" height="330" fill="#fff"/>
+<g font-family="Source Sans 3, Helvetica Neue, Arial, sans-serif" fill="#33416E" text-anchor="middle">
+<rect x="20" y="90" width="150" height="110" rx="10" fill="#F7F7F5" stroke="#33416E" stroke-width="2"/>
+<text x="95" y="128" font-size="22" font-weight="700">Alice</text><text x="95" y="154" font-size="15" fill="#6B7080">Sender</text><text x="95" y="178" font-size="15">präpariert Photonen</text>
+<rect x="590" y="90" width="150" height="110" rx="10" fill="#F7F7F5" stroke="#33416E" stroke-width="2"/>
+<text x="665" y="128" font-size="22" font-weight="700">Bob</text><text x="665" y="154" font-size="15" fill="#6B7080">Empfänger</text><text x="665" y="178" font-size="15">misst Photonen</text>
+<line x1="170" y1="145" x2="590" y2="145" stroke="#3F9AD6" stroke-width="4"/>
+<polyline points="578,136 590,145 578,154" fill="none" stroke="#3F9AD6" stroke-width="3"/>
+<text x="380" y="124" font-size="16" fill="#3F9AD6" font-weight="700">Quantenkanal (einzelne Photonen)</text>
+<rect x="305" y="160" width="150" height="66" rx="10" fill="#fff" stroke="#CF6F82" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="380" y="188" font-size="19" font-weight="700" fill="#CF6F82">Eve</text><text x="380" y="210" font-size="14" fill="#CF6F82">könnte lauschen</text>
+<path d="M95 200 V290 H665 V200" fill="none" stroke="#F58411" stroke-width="3" stroke-dasharray="8 6"/>
+<text x="380" y="282" font-size="16" fill="#F58411" font-weight="700">öffentlicher klassischer Kanal: Basen vergleichen</text>
+</g></svg>

@@ -1,0 +1,13 @@
+dist/
+node_modules/
+__pycache__/
+.pytest_cache/
+server.local.yml
+.DS_Store
+.superpowers/
+node_modules.nosync/
+pi-pruefung.txt
+aufsteller-*.svg
+
+# Rotis: Lizenz erlaubt keine Weitergabe, nur lokal
+engine/design/fonts/*.otf

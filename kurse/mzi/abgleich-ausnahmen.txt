@@ -1,0 +1,17 @@
+# Sätze der Quelle "MZI Kurs Test/Inhalte", die der Abgleich nur wegen der Markdown-Schreibweise nicht findet.
+# Format: "Datei: Abschnitt | Satzanfang" (mindestens 20 Zeichen), optional " # Grund".
+3-aufbau: Anleitung | Ersteinstellung der Justierhilfe # Bildunterschrift: steht als alt-Text der Abbildung, nicht als sichtbarer Text
+3-aufbau: Anleitung | Justierhilfe am anderen Ende der Platte # Bildunterschrift: steht als alt-Text der Abbildung
+3-aufbau: Anleitung | Ausrichtung des zweiten Strahlteilers # Bildunterschrift: steht als alt-Text der Abbildung
+3-aufbau: Anleitung | Sie werden verändert, um den Strahl auf zwei # Satz enthält <u>und</u>; im Kurs steht derselbe Wortlaut mit Unterstreichung
+# Sicherung, Fußzeilen und Bedienung (Kapitel 5-9): Plattformfunktionen ersetzen diese Texte.
+8-sicherung: Einleitung # Sicherung läuft über die Engine-Seite (Ergebnis als PDF/Abholcode) und die Stopp-Karten, nicht über eigenen Text
+8-sicherung: Zwischenstand # Engine-Funktion Abholcode ersetzt die Zwischenstand-Datei
+8-sicherung: Willkommen # Engine-Dialog beim Wiederöffnen
+8-sicherung: Neue Gruppe # Engine-Funktion Zurücksetzen („Neue Gruppe“)
+9-hintergrund: Fußzeile # Fußzeile der Engine-Seite
+10-hintergrund-aufbau: Fußzeile # Fußzeile der Engine-Seite
+9-hintergrund: Hintergrund | Die Seiten werden nacheinander freigeschaltet. # Bedienungsabsatz auf die Plattform umgeschrieben (Betreuungsmodus statt #lehrkraft)
+9-hintergrund: Hintergrund | Mit #lehrkraft am Ende der Adresse # Bedienungsabsatz auf die Plattform umgeschrieben
+9-hintergrund: Hintergrund | html#lehrkraft) sind alle Seiten # Bedienungsabsatz auf die Plattform umgeschrieben
+9-hintergrund: Hintergrund | Alle Eingaben und Messungen bleiben im Browser # Bedienungsabsatz auf die Plattform umgeschrieben (Abholcode, Neue Gruppe)

@@ -1,0 +1,16 @@
+[Unit]
+Description=foeXlab Abholdienst für Protokoll-PDFs
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/foexlab/abholdienst.py --ablage /run/foexlab-abholung
+# /run liegt im Arbeitsspeicher; das Verzeichnis wird beim Stoppen gelöscht
+RuntimeDirectory=foexlab-abholung
+DynamicUser=yes
+Restart=on-failure
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
