@@ -1,14 +1,21 @@
-// Test der Simulationsvorlage. Beim Kopieren: Feldart, Dateiname und erwartete Zahlen anpassen (siehe LIESMICH.md, Schritt 4).
+// Test der Simulationsvorlage. Beim Kopieren nur ART und DATEI anpassen (und die erwarteten Zahlen, siehe LIESMICH.md, Schritt 4).
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-// Der Pfad zum Hilfsmodul geht vom Ort dieser Datei aus bis zum Projektordner (5 Ebenen nach oben).
-// Liegt der Test später unter tests/js/<kurs>/, heißt der Pfad '../helfer'.
-const { dom, lade, ladeDatei, mitDb, plain } = require('../../../../../tests/js/helfer');
+// Den Projektordner findet der Test selbst (er sucht nach oben den Ordner mit tests/js/helfer.js): egal, wo die Datei liegt.
+function finde(start) {
+  for (let d = start; ; d = path.dirname(d)) {
+    if (fs.existsSync(path.join(d, 'tests', 'js', 'helfer.js'))) return d;
+    if (path.dirname(d) === d) throw new Error('Projektordner (mit tests/js/helfer.js) nicht gefunden.');
+  }
+}
+const WURZEL = finde(__dirname);
+const { dom, lade, ladeDatei, mitDb, plain } = require(path.join(WURZEL, 'tests', 'js', 'helfer'));
 
-const ART = 'vorlage';   // ANPASSEN: neue Feldart
-const DATEI = path.relative(path.join(__dirname, '..', '..', '..', '..', '..'), path.join(__dirname, 'vorlage.js'));
+// ANPASSEN beim Kopieren (einzige Stellen): ART und DATEI, z. B. 'kurse/mein-kurs/werkzeuge/mein-werkzeug.js'
+const DATEI = '.claude/skills/foexlab-kurs/referenz/simulation-vorlage/vorlage.js';
+const ART = 'vorlage';
 
 function umgebung(konfig, wert) {
   const k = konfig ? " data-fx-konfig='" + JSON.stringify(konfig) + "'" : '';
@@ -90,7 +97,19 @@ test('Protokoll: Tabelle mit Kopf und einer Zeile je Wert', () => {
 });
 
 test('Datei: kein ?. / ?? / import / export, keine var( in Zeichenketten', () => {
-  const q = fs.readFileSync(path.join(__dirname, 'vorlage.js'), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  const q = fs.readFileSync(path.join(WURZEL, DATEI), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
   assert.ok(!/\?\./.test(q.replace(/\?\.\d/g, ''))); assert.ok(!/\?\?/.test(q));
   assert.ok(!/^\s*(import|export)\s/m.test(q)); assert.ok(!/var\(/.test(q));
+});
+
+test('Texte aus der Konfiguration werden maskiert (kein eingeschleustes HTML)', () => {
+  const u = umgebung({ einheit: '<b>&', groesse: '<i>x</i>' });
+  assert.strictEqual(u.el.querySelectorAll('b, i').length, 0);
+  assert.ok(u.el.querySelector('[data-o="skizze"]').innerHTML.indexOf('&lt;b&gt;&amp;') >= 0);
+});
+
+test('Regler: Wert wird auf die Schrittweite gerundet', () => {
+  const u = umgebung({ min: '0', max: '1', schritt: '0.1' });
+  u.setze(0.30000000000000004); u.uebernehmen();
+  assert.strictEqual(u.wert().werte[0].x, 0.3);
 });
