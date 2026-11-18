@@ -71,9 +71,9 @@ Die Prüfung läuft von selbst mit, Ergebnis auch in `pi-pruefung.txt`. Sie läs
 python3 tools/pi_pruefen.py http://192.168.178.10
 ```
 
-Geprüft werden Startseite und Kurse, alle eingebundenen Dateien und der Abholdienst.
+Die Kurse liest er von der Startseite des Pi. Geprüft werden Startseite und Kurse, alle eingebundenen Dateien und der Abholdienst.
 
-Für Oliver geht weiterhin der direkte Weg vom lokalen Bau: `python3 engine/build.py --alle`, dann `rsync -av --delete dist/ pi@192.168.178.10:/srv/foexlab/`.
+Wer den Kurs selbst baut, kann direkt vom lokalen Bau kopieren: `python3 engine/build.py --alle`, dann `rsync -av --delete dist/ pi@192.168.178.10:/srv/foexlab/`.
 
 Ohne Laptop-Verbindung zum Pi: siehe Abschnitt 5 (USB-Stick).
 

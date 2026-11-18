@@ -12,7 +12,9 @@ import os
 import shutil
 import subprocess
 import sys
+import re
 import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -31,22 +33,50 @@ class Fehler(Exception):
     """Erwarteter Fehler mit deutscher Meldung."""
 
 
+def pruefe_pi(pi):
+    """Meldung bei unbrauchbarer Pi-Angabe, sonst None."""
+    host = pi.split("@")[-1]
+    if (not pi or pi.startswith("-") or host.startswith("-") or not host
+            or re.search(r"[\s\x00-\x1f\x7f]", pi)):
+        return "Die Angabe --pi „%s“ ist nicht brauchbar. Erwartet: benutzer@adresse, z. B. pi@192.168.178.10." % pi
+    if ":" in host or "/" in host:
+        return "Die Angabe --pi „%s“ enthält ein „:“ oder „/“. Bitte nur benutzer@adresse ohne Port angeben." % pi
+    return None
+
+
 def url_aus_host(pi):
     return "http://" + pi.split("@")[-1]
 
 
 def baue_rsync(quelle, pi):
-    return ["rsync", "-av", "--delete", str(quelle).rstrip("/") + "/", pi + ":/srv/foexlab/"]
+    return ["rsync", "-av", "--delete", "--no-owner", "--no-group", "--",
+            str(quelle).rstrip("/") + "/", pi + ":/srv/foexlab/"]
 
 
 def lade(ziel):
+    """Lädt nach <ziel>.part, prüft, ersetzt dann erst die alte Datei."""
+    ziel = Path(ziel)
+    teil = ziel.with_name(ziel.name + ".part")
     try:
-        with urllib.request.urlopen(URL, timeout=60) as r, open(str(ziel), "wb") as f:
-            shutil.copyfileobj(r, f)
-    except Exception:
-        raise Fehler("Das Herunterladen hat nicht geklappt. Ist der Laptop mit dem Internet "
-                     "verbunden (nicht mit dem WLAN foeXlab)? Dann den Befehl mit --laden "
-                     "noch einmal ausführen.")
+        try:
+            with urllib.request.urlopen(URL, timeout=60) as r, open(str(teil), "wb") as f:
+                shutil.copyfileobj(r, f)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                raise Fehler("Update nicht gefunden – ist auf GitHub schon etwas veröffentlicht?")
+            raise Fehler("GitHub hat den Download abgelehnt (Fehler %s). Bitte später noch einmal versuchen." % e.code)
+        except OSError:
+            raise Fehler("Das Herunterladen hat nicht geklappt. Ist der Laptop mit dem Internet "
+                         "verbunden (nicht mit dem WLAN foeXlab)? Dann den Befehl mit --laden "
+                         "noch einmal ausführen.")
+        with tempfile.TemporaryDirectory() as tmp:
+            entpacke_und_pruefe(teil, tmp)
+        os.replace(str(teil), str(ziel))
+    finally:
+        try:
+            teil.unlink()
+        except OSError:
+            pass
 
 
 def entpacke_und_pruefe(zip_pfad, ziel):
@@ -89,12 +119,14 @@ def main(argv=None):
     except SystemExit as e:
         return 2 if e.code else 0
     zip_pfad = Path(args.zip).expanduser()
+    problem = pruefe_pi(args.pi)
+    if problem:
+        _ausgabe(problem)
+        return 2
     try:
         if args.laden:
             _ausgabe("Lade das Update aus dem Internet …")
             lade(zip_pfad)
-            with tempfile.TemporaryDirectory() as tmp:
-                entpacke_und_pruefe(zip_pfad, tmp)
             _ausgabe("Heruntergeladen und geprüft: %s. Im Labor (WLAN „foeXlab“) jetzt "
                      "ohne --laden ausführen." % zip_pfad)
             return 0
@@ -113,11 +145,18 @@ def main(argv=None):
             if subprocess.run(baue_rsync(quelle, args.pi)).returncode != 0:
                 raise Fehler("Das Kopieren auf den Pi hat nicht geklappt. Ist der Laptop im "
                              "WLAN „foeXlab“ und der Pi eingeschaltet?")
-        _ausgabe("Prüfe den Pi …")
-        if subprocess.run([sys.executable, str(HIER / "pi_pruefen.py"), url_aus_host(args.pi)]).returncode != 0:
-            raise Fehler("Kopiert, aber die Prüfung meldet Fehler (siehe oben, pi-pruefung.txt).")
+            _ausgabe("Prüfe den Pi …")
+            if subprocess.run([sys.executable, str(HIER / "pi_pruefen.py"), url_aus_host(args.pi),
+                               "--kurse-aus", str(quelle)]).returncode != 0:
+                raise Fehler("Kopiert, aber die Prüfung meldet Fehler (siehe oben, pi-pruefung.txt).")
     except Fehler as e:
         _ausgabe(str(e))
+        return 1
+    except KeyboardInterrupt:
+        _ausgabe("Abgebrochen.")
+        return 1
+    except OSError as e:
+        _ausgabe("Das hat nicht geklappt (%s). Bitte Meldung notieren und noch einmal versuchen." % e)
         return 1
     _ausgabe("Fertig: Der Pi ist aktualisiert.")
     return 0

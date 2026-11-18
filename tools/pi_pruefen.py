@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Prüft den Lab-Server von einem Gerät im selben Netz (nur Standardbibliothek).
 
-Aufruf:  python3 tools/pi_pruefen.py http://192.168.178.10
+Aufruf:  python3 tools/pi_pruefen.py http://192.168.178.10 [--kurse-aus <Ordner>]
+Ohne --kurse-aus werden die Kurse von der Startseite des Pi gelesen (kein lokales dist/ nötig).
 Prüft Startseite und Kurse, alle in den Kursseiten eingebundenen Dateien und den Abholdienst
 (Test-PDF ablegen, mit Code abholen, falscher Code). Ergebnis auch in pi-pruefung.txt.
 """
@@ -22,8 +23,19 @@ def hole(url, methode="GET", daten=None, kopf=None):
         return 0, str(e).encode(), {}
 
 
-def main():
-    basis = (sys.argv[1] if len(sys.argv) > 1 else "http://192.168.178.10").rstrip("/")
+def kurse_von_startseite(html):
+    """Kursnamen aus den Links der Startseite (href="kurs/")."""
+    return sorted(set(re.findall(r'href="\.?/?([a-z0-9][a-z0-9_-]*)/?"', html)) - {"abholen"})
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    ordner = None
+    if "--kurse-aus" in argv:
+        i = argv.index("--kurse-aus")
+        ordner = argv[i + 1] if i + 1 < len(argv) else None
+        del argv[i:i + 2]
+    basis = (argv[0] if argv else "http://192.168.178.10").rstrip("/")
     zeilen, fehler = [], 0
 
     def melde(ok, text):
@@ -31,14 +43,24 @@ def main():
         fehler += 0 if ok else 1
         zeilen.append(("ok      " if ok else "FEHLER  ") + text)
 
-    kurse = sorted(k for k in os.listdir(os.path.join(WURZEL, "dist"))
-                   if os.path.isfile(os.path.join(WURZEL, "dist", k, "index.html")))
+    if ordner:
+        kurse = sorted(k for k in os.listdir(ordner) if os.path.isfile(os.path.join(ordner, k, "index.html")))
+    else:
+        status, start, _ = hole(basis + "/")
+        kurse = kurse_von_startseite(start.decode("utf-8", "replace")) if status == 200 else []
+
+    def kursseite(k):
+        if ordner:
+            with open(os.path.join(ordner, k, "index.html"), encoding="utf-8") as f:
+                return f.read()
+        return hole(f"{basis}/{k}/")[1].decode("utf-8", "replace")
+
     for pfad in ["/"] + [f"/{k}/" for k in kurse] + ["/abholen"]:
         status, _, _ = hole(basis + pfad)
         melde(status == 200, f"Seite {pfad} ({status})")
 
     for k in kurse:
-        html = open(os.path.join(WURZEL, "dist", k, "index.html"), encoding="utf-8").read()
+        html = kursseite(k)
         verweise = set(re.findall(r'(?:src|href|poster)="((?!https?:|data:|#|mailto:|javascript:)[^"]+)"', html))
         fehlend = []
         for v in sorted(verweise):
@@ -69,8 +91,8 @@ def main():
     print(text)
     with open(os.path.join(WURZEL, "pi-pruefung.txt"), "w", encoding="utf-8") as f:
         f.write(text + "\n")
-    sys.exit(1 if fehler else 0)
+    return 1 if fehler else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
