@@ -97,7 +97,22 @@ x = L, y = T, ausgleich = keiner     ← linear | ursprung | keiner
 g = 9.81
 :::
 ```
-Formeln: `+ - * / ^`, Klammern, `pi`, `sqrt sin cos tan ln log`.
+Formeln (gerechnet wird nur im Browser, `engine/web/js/formel.js`): `+ - * / ^`, Klammern, `pi`, `sqrt sin cos tan ln log` (`ln` natürlich, `log` zur Basis 10). Keine Umkehrfunktionen (`asin` …) – dann eine Größe berechnen, die ohne sie auskommt (z. B. den Quotienten unten).
+- **Winkel:** `sin cos tan` rechnen im Bogenmaß. Winkel in Grad so schreiben: `sin(a*pi/180)`.
+- **Kürzel:** nur `A–Z a–z 0–9 _`, beginnt mit einem Buchstaben; Groß/Klein zählt. Keine Umlaute, griechischen Buchstaben (`α`), Leerzeichen – solche Kürzel kann keine Formel benutzen. Nicht `pi` oder einen Funktionsnamen nehmen. Formeln nutzen Kürzel der Eingabespalten, aus `:::konstanten` und anderer berechneter Spalten – diese aber nur, wenn sie **weiter oben** stehen.
+- **Nicht berechenbar** (0/0, Division durch 0, leere Eingabe, Formelfehler): Die Zelle zeigt „–“, im CSV bleibt sie leer, im Diagramm fehlt der Punkt. `kurs_pruefen` prüft Formeln nicht – Formel einmal mit einem bekannten Wert nachrechnen.
+
+Beispiel mit Winkeln (bei α = 0° steht im Quotienten „–“):
+```
+:::spalten
+a | Einfallswinkel α | °
+b | Brechungswinkel β | °
+q = sin(a*pi/180)/sin(b*pi/180) | sin α / sin β |
+:::
+:::diagramm
+x = a, y = b, ausgleich = keiner
+:::
+```
 
 ## Foto, Skizze, Checkliste
 
@@ -144,4 +159,7 @@ Alle Dateien liegen in `kurse/<id>/media/`. Was im Text steht, unterscheidet sic
 | Absicht | Baustein |
 |---|---|
 | vorhandenes oder neues Werkzeug | `### Simulation: Fadenlänge {.werkzeug name="pendel" min="10" max="100" sperrt #sim}` (siehe `referenz/werkzeuge.md`) |
+| dasselbe Werkzeug mit anderer Einstellung | zweites Feld mit anderen Attributen, z. B. `{.werkzeug name="brechung" n="1.33" optional #sim-wasser}` – keine Kopie des Werkzeugs |
+
+`sperrt` und `optional` wirken bei `{.werkzeug}` wie bei anderen Feldern (`optional`: zählt nicht für `felder:`, wird nie gesperrt). Attributwerte stehen in `"…"` und dürfen Sonderzeichen enthalten (`einheit="°"`, `groesse="Einfallswinkel α"`), nur kein `"`.
 | Simulation folgt später | `### Simulation: Masse {.platzhalter}` + ein Absatz, was sie können soll (kein Feld, sperrt nie) |

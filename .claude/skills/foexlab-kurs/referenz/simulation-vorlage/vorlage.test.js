@@ -1,4 +1,5 @@
-// Test der Simulationsvorlage. Beim Kopieren nur ART und DATEI anpassen (und die erwarteten Zahlen, siehe LIESMICH.md, Schritt 4).
+// Test der Simulationsvorlage. Beim Kopieren ART und DATEI anpassen und den Test „HIER ANPASSEN: Rechenvorschrift prüfen“
+// (ganz unten) durch zwei physikalisch bekannte Werte deiner Formel ersetzen – Pflicht, siehe LIESMICH.md, Schritt 4.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -13,7 +14,7 @@ function finde(start) {
 const WURZEL = finde(__dirname);
 const { dom, lade, ladeDatei, mitDb, plain } = require(path.join(WURZEL, 'tests', 'js', 'helfer'));
 
-// ANPASSEN beim Kopieren (einzige Stellen): ART und DATEI, z. B. 'kurse/mein-kurs/werkzeuge/mein-werkzeug.js'
+// ANPASSEN beim Kopieren: ART und DATEI (und unten den Test „Rechenvorschrift prüfen“), z. B. 'kurse/mein-kurs/werkzeuge/mein-werkzeug.js'
 const DATEI = '.claude/skills/foexlab-kurs/referenz/simulation-vorlage/vorlage.js';
 const ART = 'vorlage';
 
@@ -112,4 +113,17 @@ test('Regler: Wert wird auf die Schrittweite gerundet', () => {
   const u = umgebung({ min: '0', max: '1', schritt: '0.1' });
   u.setze(0.30000000000000004); u.uebernehmen();
   assert.strictEqual(u.wert().werte[0].x, 0.3);
+});
+
+// HIER ANPASSEN: Rechenvorschrift prüfen. Pflicht beim Kopieren: diesen Test durch zwei Werte ersetzen, die du
+// physikalisch kennst (Reglerwert → erwarteter Messwert, mit der Rundung aus f). Nutzt dein Werkzeug eine zusätzliche
+// Größe aus der Kurszeile (z. B. n="1.33"), prüfe einen Wert auch mit diesem Attribut; sonst den zweiten Block löschen.
+test('Rechenvorschrift: bekannte Werte (Vorlage: y = faktor · x², faktor = 1)', () => {
+  const messe = (konfig, x) => { const u = umgebung(konfig); u.setze(x); u.uebernehmen(); return u.wert().werte[0].y; };
+  assert.strictEqual(messe({ min: '0', max: '10', schritt: '0.5' }, 3), 9);
+  assert.strictEqual(messe({ min: '0', max: '10', schritt: '0.5' }, 2.5), 6.25);
+  // zusätzliche Größe aus der Kurszeile: {.werkzeug name="vorlage" faktor="2"} – kommt als Zahl in k.faktor an (auch mit Komma)
+  assert.strictEqual(messe({ faktor: '2' }, 3), 18);
+  assert.strictEqual(messe({ faktor: '0,5' }, 4), 8);
+  assert.strictEqual(messe({ faktor: 'kein Wert' }, 3), 9, 'unbrauchbares Attribut: Standardwert');
 });

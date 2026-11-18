@@ -7,6 +7,7 @@ Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle�
 
 1. **Vorhanden:** passt ein Werkzeug unten genau? → in den eigenen Kurs kopieren (siehe „Kopieren“).
 2. **Variante:** passt es fast (andere Schwelle, anderer Text, ein Modus mehr)? → kopieren und in der Kopie ändern, Test anpassen.
+   Unterscheidet sich nur eine Zahl (Brechzahl, Masse, Schwelle) und liest das Werkzeug sie als Attribut (Vorlage: `k.n`), keine Kopie: dasselbe Werkzeug zweimal im Kurs mit anderem Attribut (`n="1.33"`). Ein Werkzeug aus der Vorlage im **eigenen** Kurs bekommt so ein Attribut direkt (siehe `simulation-vorlage/LIESMICH.md`, Schritt 3).
 3. **Neu:** nichts passt → aus `referenz/simulation-vorlage/` bauen (dort `LIESMICH.md`), nie frei.
 4. **Platzhalter:** soll (noch) nicht gebaut werden → `### Simulation … {.platzhalter}` mit einem Absatz, was sie können soll.
 
@@ -60,12 +61,12 @@ Beispiele aus `kurse/mzi/abschnitte/`:
 
 ## Werkzeuge anderer Kurse
 
-Hier trägt jeder Kurs mit eigenen (neuen oder abgewandelten) Werkzeugen eine Zeile ein, im selben Commit wie das Werkzeug. Name in Backticks, sonst erkennt der Test den Eintrag nicht.
+Hier trägt jeder Kurs mit eigenen (neuen oder abgewandelten) Werkzeugen eine Zeile ein, im selben Commit wie das Werkzeug. Name in Backticks, sonst erkennt der Test den Eintrag nicht. Das erste echte Werkzeug **ersetzt** die Zeile „(noch keine)“; jedes weitere kommt als neue Zeile darunter. Zusatzattribute (z. B. `n`) in der Spalte „Konfig“ nennen.
 
 Format einer Zeile (Beispiel, noch kein echtes Werkzeug):
 
 ```
-| `brechung` | `brechung` | Einfallswinkel per Regler, Brechungswinkel messen (aus der Vorlage) | `min`, `max`, `schritt` | `tests/js/brechung/brechung.test.js` |
+| `brechung` | `brechung` | Einfallswinkel per Regler, Brechungswinkel messen (aus der Vorlage) | `min`, `max`, `schritt`, `n` (Brechzahl, Standard 1.5) | `tests/js/brechung/brechung.test.js` |
 ```
 
 | Werkzeug | Kurs | Zweck | Konfig | Test |

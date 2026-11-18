@@ -1,4 +1,4 @@
-// Test des Werkzeugs „pendel“ (Beispielkurs), aus der Vorlage kopiert. Beim Kopieren nur ART und DATEI anpassen (und die erwarteten Zahlen, siehe LIESMICH.md, Schritt 4).
+// Test des Werkzeugs „pendel“ (Beispielkurs), aus der Vorlage kopiert. Beim Kopieren ART und DATEI anpassen und den Test „Rechenvorschrift prüfen“ ersetzen (siehe LIESMICH.md, Schritt 4).
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -115,6 +115,7 @@ test('Regler: Wert wird auf die Schrittweite gerundet', () => {
   assert.strictEqual(u.wert().werte[0].x, 0.3);
 });
 
+// HIER ANPASSEN: Rechenvorschrift prüfen – im Beispiel schon ersetzt: zwei physikalisch bekannte Werte des Pendels.
 test('Periodendauer: T = 2π·√(L/g), vierfache Länge ergibt doppelte Periodendauer', () => {
   const u = umgebung({ min: '10', max: '100', schritt: '5' });
   u.setze(25); u.uebernehmen();

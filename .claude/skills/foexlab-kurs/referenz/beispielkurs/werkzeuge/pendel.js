@@ -12,7 +12,7 @@
   const ART = 'pendel';            // HIER ANPASSEN: neuer Name der Feldart (gleich wie name="…" im Kurstext)
 
   /* ---- 1. Die Rechenvorschrift: aus dem Reglerwert x wird der Messwert y ---- */
-  function f(x) {                   // HIER ANPASSEN: y = f(x); hier x = Fadenlänge in cm, y = Periodendauer in s
+  function f(x, k) {                // HIER ANPASSEN: y = f(x); hier x = Fadenlänge in cm, y = Periodendauer in s
     const g = 9.81, laenge = x / 100;
     return Math.round(2 * Math.PI * Math.sqrt(laenge / g) * 100) / 100;
   }
@@ -38,12 +38,19 @@
     ((w && w.werte) || []).forEach((r) => { if (r && zahl(r.x) !== null && zahl(r.y) !== null) werte.push({ x: r.x, y: r.y }); });
     return { werte };
   }
-  // Einstellungen aus dem Kurstext (data-fx-konfig), mit Standardwerten
+  // Einstellungen aus dem Kurstext (data-fx-konfig), mit Standardwerten; weitere Attribute (z. B. n="1.33") kommen
+  // unter ihrem Namen dazu: als Zahl, wenn der Text eine Zahl ist (Komma oder Punkt), sonst als Text
   function konfig(el) {
     let c = {};
     try { c = JSON.parse(el.getAttribute('data-fx-konfig')) || {}; } catch (e) { c = {}; }
+    if (typeof c !== 'object' || Array.isArray(c)) c = {};
     const n = (v, std) => { const z = parseFloat(v); return isFinite(z) ? z : std; };
-    const k = { min: n(c.min, 0), max: n(c.max, 10), schritt: n(c.schritt, 1), einheit: c.einheit || '', groesse: c.groesse || 'x' };
+    const k = {};
+    Object.keys(c).forEach((a) => {
+      const t = String(c[a]).trim().replace(',', '.');
+      k[a] = /^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t) ? parseFloat(t) : c[a];
+    });
+    k.min = n(c.min, 0); k.max = n(c.max, 10); k.schritt = n(c.schritt, 1); k.einheit = c.einheit || ''; k.groesse = c.groesse || 'x';
     if (k.schritt <= 0) k.schritt = 1;
     // Nachkommastellen der Schrittweite: darauf werden Reglerwerte gerundet (0.1 + 0.2 soll nicht 0.30000000000000004 sein)
     const ks = String(k.schritt).split('.')[1];
@@ -84,7 +91,7 @@
     // Reglerbewegung ändert nur die Skizze, nie den gespeicherten Wert (kein `change` am Feld)
     regler.addEventListener('input', () => { x = runde(parseFloat(regler.value), k); zeichne(); });
     knopf.addEventListener('click', () => {
-      s.werte.push({ x: x, y: f(x) });
+      s.werte.push({ x: x, y: f(x, k) });
       zeigeTabelle();
       // `change` genau hier: erst nach dem Klick. Läuft später eine Animation, kommt es an deren Ende (siehe FORMAT.md).
       el.dispatchEvent(new root.Event('change', { bubbles: true }));

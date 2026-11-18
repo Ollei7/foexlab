@@ -27,30 +27,34 @@ python3 tools/kurs_pruefen.py mzi --ohne-tests
 ## Schritt 1: Notizen lesen, Kurs-ID, Branch
 
 1. Alle Notizen, Fotos und Dateien der Autorin lesen. Unklar Gebliebenes sammeln, nicht raten.
-2. Mit der Autorin klären: **Titel**, **Untertitel**, **Kurs-ID** (kurz, nur `a-z`, `0-9`, `-`, z. B. `brechung`; wird Teil der Internetadresse). Gibt es `kurse/<id>/` schon, ist es eine Überarbeitung (siehe unten) – oder eine andere ID wählen.
-3. Branch vom aktuellen Stand:
+2. **Kurs-ID** klären (kurz, nur `a-z`, `0-9`, `-`, z. B. `brechung`; wird Teil der Internetadresse). Gibt es `kurse/<id>/` schon, ist es eine Überarbeitung (siehe unten) – oder eine andere ID wählen. **Titel** und **Untertitel**: hat die Autorin keine genannt, schlägst du sie im Plan (Schritt 2) vor – keine eigene Frage.
+3. Branch immer vom aktuellen `main` (auch wenn gerade ein anderer Branch oder ein „losgelöster“ Stand ausgecheckt ist):
    ```
    git status --short          # fremde Änderungen? nicht anfassen, Autorin fragen
    ```
    Unversionierte Ordner, die nicht zum Kurs gehören (z. B. persönliche Quellordner mit Notizen), einfach stehen lassen: nie committen, nie löschen.
    ```
    git switch main && git pull
+   ls tools/kurs_pruefen.py .claude/skills/foexlab-kurs/SKILL.md
    git switch -c kurs/<id>
    ```
+   Scheitert `git pull` oder fehlt danach eine der beiden Dateien: **aufhören** und der Autorin sagen, dass ihr Stand veraltet ist und sie sich an Oliver wendet. Nie auf einem alten Stand oder dem Stand eines anderen Branches weiterbauen.
 
 ## Schritt 2: Plan vorlegen – erst nach Bestätigung schreiben
 
-Lege den Plan als Tabelle vor, ein Kapitel nach dem anderen:
+Lege den Plan als Tabelle vor, ein Kapitel nach dem anderen. Darüber: **Titel** und **Untertitel** (aus den Notizen oder dein Vorschlag) – sie werden mit dem Plan bestätigt.
 
 | Kapitel (Datei) | Karte (`#id`) | Feld: Titel – Baustein (`#id`) | Freischaltung | Werkzeug |
 |---|---|---|---|---|
-| 1 Einstieg (`01-einstieg.md`) | Vermutung (`#vermutung-karte`) | „Vermutung: Brechung“ – `{.vermutung sperrt}` (`#vermutung`) | – | – |
+| 1 Brechung (`01-brechung.md`) | Vermutung (`#vermutung-karte`) | „Vermutung: Brechung“ – `{.vermutung sperrt}` (`#vermutung`) | – | – |
 | | Messung (`#messung`) | „Messreihe: Winkel“ – `{.messtabelle}` mit Diagramm | – | – |
 | | Simulation (`#simulation`) | „Simulation: Einfallswinkel“ – `{.werkzeug name="brechung" sperrt}` | – | neu nach Vorlage |
-| 2 Deutung (`02-deutung.md`) | … | „Kontrollfrage: …“ – `{.mc sperrt}` | `felder:einstieg/auswertung` | – |
+| | Kontrolle (`#kontrolle`) | „Kontrollfrage: …“ – `{.mc sperrt}` | – | – |
 | Hintergrund (`90-hintergrund.md`) | … | `{.info}` | `nachschlagen: true` | – |
 
-- Jedes Werkzeug kennzeichnen: **vorhanden** (Name aus `referenz/werkzeuge.md`), **Variante** (von welchem), **neu nach Vorlage**, **Platzhalter**.
+- **Größe:** Eine Laborstation ≈ ein Kapitel mit 4–7 Karten (Einstieg, Vermutung, Messung, Simulation, Auswertung, Kontrolle). Weitere Kapitel nur, wo ein Tor sinnvoll ist (`oeffnet_nach`, z. B. Deutung erst nach der Messung, Besprechung mit Betreuenden). Hintergrundseite nur, wenn die Notizen Hintergrund enthalten.
+- **Kontrollfrage zum Schluss** gehört ans Ende des letzten Arbeitskapitels, nicht in ein eigenes Kapitel: mit `sperrt` zählt sie erst als erledigt, wenn sie richtig beantwortet ist (Fortschritt, „Noch offen“), auch ohne folgende Karte. Der Beispielkurs hat Kapitel 2 nur, um die Freischaltung zu zeigen, und dort folgt der Kontrollfrage noch eine Zusammenfassung.
+- Jedes Werkzeug kennzeichnen: **vorhanden** (Name aus `referenz/werkzeuge.md`), **Variante** (von welchem), **neu nach Vorlage**, **Platzhalter**. Dasselbe Werkzeug mit anderer Zahl (z. B. Wasser statt Glas) ist **kein** zweites Werkzeug, sondern eine zweite Zeile mit Attribut (`n="1.33"`).
 - Darunter die offenen Fragen aus den Notizen.
 - Fragen: „Passt der Plan so?“ Erst nach einem klaren Ja weiter. Änderungswünsche einarbeiten und den geänderten Teil erneut zeigen.
 
@@ -61,19 +65,20 @@ Lege den Plan als Tabelle vor, ein Kapitel nach dem anderen:
 - Konventionen aus `referenz/regeln.md` einhalten, besonders: feste `#id` an jeder Karte und jedem Feld; Feldtitel kursweit eindeutig; Kontrollfragen mit `sperrt`, `:::richtig`/`:::falsch` (bei Bedarf `versuche="2"` + `:::nach_versuchen`); Kapitel 2 ff. mit `oeffnet_nach` + `grund`; Hinweise für Betreuende in `:::lehrkraft`.
 - Texte der Autorin möglichst wörtlich; fachlich Unsicheres nicht erfinden, sondern in „Noch zu prüfen“ eintragen.
 - Bilder nach `kurse/<id>/media/`, höchstens 1200 px (`sips -Z 1200 <quelle> --out kurse/<id>/media/<name>.jpg`).
+- Fehlt ein Foto oder Video, das die Notizen erwähnen: kein Bild erfinden, nicht auf eine fehlende Datei verweisen (`kurs_pruefen` meldet das). Stattdessen an der Stelle `<!-- Foto: Strohhalm im Wasserglas folgt -->` und eine Zeile in „Noch zu prüfen“.
 
 ## Schritt 4: Werkzeuge (Simulationen)
 
 Reihenfolge, immer die erste passende Möglichkeit:
 1. **Vorhanden:** Datei samt `*kern*.js` aus `kurse/<kurs>/werkzeuge/` nach `kurse/<id>/werkzeuge/` kopieren, Test nach `tests/js/<id>/` kopieren und Pfade anpassen. Original nie ändern. Details: `referenz/werkzeuge.md`.
 2. **Variante:** wie 1, dann die Kopie anpassen und den Test mit.
-3. **Neu:** nach `referenz/simulation-vorlage/LIESMICH.md` (kopieren, `ART`, `f(x)`, `skizze` anpassen, Test nach `tests/js/<id>/<name>.test.js` mit `DATEI = 'kurse/<id>/werkzeuge/<name>.js'`). Nie frei programmieren.
+3. **Neu:** nach `referenz/simulation-vorlage/LIESMICH.md` (kopieren, `ART`, `f(x, k)`, `skizze` anpassen, Test nach `tests/js/<id>/<name>.test.js` mit `DATEI = 'kurse/<id>/werkzeuge/<name>.js'`). Nie frei programmieren. Varianten derselben Simulation (andere Brechzahl, Masse …) über ein Attribut in der Kurszeile (`k.n`), nicht als Kopie.
 4. **Platzhalter:** `### Simulation: … {.platzhalter}` + Absatz, was sie können soll; nichts darf auf diese Karte warten.
 
 Eine Simulation vorschlagen, wenn die Notizen eine nennen oder eine Größe im Labor schwer zu verändern ist (Masse, Wellenlänge, Einzelphotonen); im Zweifel die Autorin fragen, nicht von selbst bauen.
-Tests: Für jedes Werkzeug ist ein JS-Test Pflicht. Ein Python-Test `tests/py/test_<id>*.py` lohnt sich nur selten (z. B. wenn eine feste Kursstruktur geschützt werden soll).
+Tests: Für jedes Werkzeug ist ein JS-Test Pflicht. Bei Werkzeugen aus der Vorlage ersetzt du den Test „HIER ANPASSEN: Rechenvorschrift prüfen“ durch zwei physikalisch bekannte Werte deiner Formel (Regel für dich: `kurs_pruefen` kann nicht erkennen, ob die Werte stimmen). Ein Python-Test `tests/py/test_<id>*.py` lohnt sich nur selten (z. B. wenn eine feste Kursstruktur geschützt werden soll).
 
-Neue oder abgewandelte Werkzeuge in `referenz/werkzeuge.md`, Tabelle „Werkzeuge anderer Kurse“, eintragen (sonst schlägt ein Test fehl) – das ist die einzige Datei außerhalb des Kurses, die du dafür änderst, und sie gehört in denselben Commit.
+Neue oder abgewandelte Werkzeuge in `referenz/werkzeuge.md`, Tabelle „Werkzeuge anderer Kurse“, eintragen (sonst schlägt ein Test fehl; das erste echte Werkzeug ersetzt die Zeile „(noch keine)“) – das ist die einzige Datei außerhalb des Kurses, die du dafür änderst, und sie gehört in denselben Commit.
 
 ## Schritt 5: Prüfen bis „bereit“
 
@@ -84,7 +89,7 @@ python3 tools/kurs_pruefen.py <id> --details      # zusätzlich Rohausgabe von B
 ```
 - Jede Zeile `– Text (Ort)` ist ein Befund; Ort ist `datei.md:Zeile`, eine Karte oder `Tests`. Befund lesen, an der Stelle beheben, erneut prüfen.
 - Letzte Zeile „bereit“ (Exit 0) = fertig. „noch nicht bereit (n Punkte)“ (Exit 1) = weitermachen. Exit 2 = Einrichtung oder falsche Kurs-ID (Schritt 0).
-- „Platzhalter (noch zu bauen)“ ist kein Fehler, nur eine Liste – der Autorin nennen.
+- Bei „bereit“ steht davor eine Zusammenfassung (Kapitel, Karten, Felder, Werkzeuge, Tests) und „Platzhalter: keine“ oder die Liste „Platzhalter (noch zu bauen)“ – kein Fehler, der Autorin nennen.
 - Schlägt ein Test fehl: mit `--details` die Ursache suchen, das Werkzeug oder den Test im eigenen Kurs reparieren, nie die Engine.
 - Befund nicht verstanden oder nicht im eigenen Kurs behebbar → der Autorin in einem Satz sagen, was los ist; nicht an `tools/` oder `engine/` herumändern.
 
@@ -103,7 +108,7 @@ python3 tools/devserver.py        # im Hintergrund starten, läuft bis zum Beend
 
 ```
 git add kurse/<id> tests/js/<id>        # nur diese Pfade; ggf. auch tests/py/test_<id>*.py
-                                         # und .claude/skills/foexlab-kurs/referenz/werkzeuge.md
+git add .claude/skills/foexlab-kurs/referenz/werkzeuge.md   # nur, wenn ein Werkzeug neu oder abgewandelt ist
 git status --short                       # nichts Fremdes dabei?
 git commit -m "kurs(<id>): <Titel> neu angelegt"
 git push -u origin kurs/<id>          # abgelehnt (keine Schreibrechte)? Autorin bittet Oliver um Zugang zu Ollei7/foexlab

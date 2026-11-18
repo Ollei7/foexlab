@@ -52,6 +52,7 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
 - Bilder höchstens 1200 px breit (der Bau verkleinert, das Repo bleibt aber groß), Videos klein halten (über 10 MB werden sie nicht eingebettet). Dateinamen ohne Leerzeichen und Umlaute.
 - SVGs mit festen Farben (`#3F9AD6` Blau, `#33416E` Navy, `#F58411` Orange, `#222222` Text), nie `var(--…)` oder `currentColor`.
 - Fotos der Autorin: verkleinern, z. B. `sips -Z 1200 foto.jpg --out kurse/<id>/media/foto.jpg` (Mac).
+- Fehlt ein Foto/Video noch: nichts erfinden und keinen Verweis auf eine fehlende Datei (P); an der Stelle `<!-- Foto: … folgt -->` und eine Zeile in „Noch zu prüfen“ in `AENDERUNGEN.md`.
 
 ## Werkzeuge
 

@@ -5,6 +5,8 @@ oeffnet_nach: felder:einstieg/auswertung
 grund: "Öffnet sich, wenn ihr die Auswertung in Kapitel 1 erledigt habt."
 ---
 
+<!-- Eigenes Kapitel nur, um die Freischaltung (oeffnet_nach) zu zeigen; nach der Kontrollfrage folgt noch die Zusammenfassung. Steht am Schluss nur eine Kontrollfrage, gehört sie ans Ende des letzten Arbeitskapitels. -->
+
 ## Kurze Kontrolle {#kontrolle}
 
 ### Kontrollfrage: Kürzerer Faden {.mc sperrt #kontrolle-kuerzer}
