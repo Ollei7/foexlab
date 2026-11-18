@@ -15,6 +15,7 @@ Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle�
 - Werkzeugdatei **und** jede Datei mit `kern` im Namen, die sie braucht, nach `kurse/<id>/werkzeuge/` kopieren. Alle mzi-Werkzeuge brauchen `mzikern.js` (sie beginnen mit `M = FX.mzi`).
 - Die Kopie gehört dem neuen Kurs. Das Original in `kurse/mzi/` **nie** ändern – auch nicht „nur kurz“.
 - Test mitkopieren: die Testdatei aus der Tabelle nach `tests/js/<id>/`, darin `kurse/mzi/` durch `kurse/<id>/` ersetzen und Testfälle für nicht kopierte Werkzeuge löschen. `require('../helfer')` bleibt.
+- Manche Tests laden mehrere Werkzeuge in einer gemeinsamen Funktion `umgebung()` (z. B. lädt `aufbau.test.js` `mzikern.js`, `vorhersage.js` **und** `aufbau.js`): entweder alle geladenen Werkzeuge mitkopieren oder in `umgebung()` die `ladeDatei`-Zeilen der nicht kopierten entfernen.
 - Werkzeuge, die andere Felder lesen (`vorhersage=`, `quelle=`, `vorher=` …), bekommen die Feld-ID des eigenen Kurses: `abschnitt/karte/feld` (Abschnitt = Dateiname ohne Nummer, z. B. `01-messung.md` → `messung`).
 - Schwellen (Photonenzahlen, Anzahl Messreihen) stehen in `EINST` oben in `mzikern.js`; in der Kopie ändern ist eine Variante.
 
@@ -39,7 +40,7 @@ Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle�
 | `dceinzel` | Delayed Choice, Einzelmessungen: Photon senden, Zufallsgenerator wählt Strahlteiler 2 | – | `dc.test.js` |
 | `dcmessreihe` | Delayed Choice, Messreihen à 1000 Photonen, bei Δφ = 0° oder per Regler | `modus="s2"\|"s3"`, `vorher="<feld-id s2>"` (bei s3), `nachher="<feld-id s3>"` (bei s2) | `dc.test.js` |
 | `dcsortieren` | Messreihen „drin“/„draußen“ zuordnen und mitteln | `quellen="<feld-id s2>,<feld-id s3>"` | `dc2.test.js` |
-| `dcdurchlauf` | Messdurchlauf Δφ 0–360° im Zeitraffer; meldet auch die Art `dcergebnis` an | `modus="lauf"` | `dc2.test.js` |
+| `dcdurchlauf` | Messdurchlauf Δφ 0–360° im Zeitraffer; meldet auch die Art `dcergebnis` an | – (mzi schreibt `modus="lauf"`, ohne Wirkung) | `dc2.test.js` |
 | `dcergebnis` | (in `dcdurchlauf.js`) zeigt die Diagramme eines Messdurchlaufs noch einmal, nur Anzeige | `quelle="<feld-id des Durchlaufs>"` | `dc2.test.js` |
 | `zitat` | zeigt eine frühere Vermutung als Zitat (Text oder Stiftschrift), nur Anzeige | `quelle="<feld-id der Vermutung>"` | `dc2.test.js` |
 
@@ -56,6 +57,20 @@ Beispiele aus `kurse/mzi/abschnitte/`:
 ### Ergebnis des Messdurchlaufs {.werkzeug name="dcergebnis" quelle="delayed-choice/k3-s5/s5" #erg-anzeige}
 ### Vorhersage {.werkzeug name="zitat" quelle="delayed-choice/k3-motiv/dc-hyp" #zitat}
 ```
+
+## Werkzeuge anderer Kurse
+
+Hier trägt jeder Kurs mit eigenen (neuen oder abgewandelten) Werkzeugen eine Zeile ein, im selben Commit wie das Werkzeug. Name in Backticks, sonst erkennt der Test den Eintrag nicht.
+
+Format einer Zeile (Beispiel, noch kein echtes Werkzeug):
+
+```
+| `brechung` | `brechung` | Einfallswinkel per Regler, Brechungswinkel messen (aus der Vorlage) | `min`, `max`, `schritt` | `tests/js/brechung/brechung.test.js` |
+```
+
+| Werkzeug | Kurs | Zweck | Konfig | Test |
+|---|---|---|---|---|
+| (noch keine) | | | | |
 
 ## Beispiel aus der Vorlage
 

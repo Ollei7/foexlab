@@ -18,7 +18,7 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
   titel: "Brechung am Halbzylinder"
   untertitel: "Lichtbrechung messen und deuten"
   id: brechung
-  musterloesungen: false
+  musterloesungen: false      # true oder false – nie „ja“/„nein“ (jeder Text gilt als wahr)
   ```
 - `AENDERUNGEN.md`: Herkunft (welche Notizen, Stand), Abweichungen von den Notizen, und immer ein Abschnitt **„## Noch zu prüfen“** mit allem, was die Autorin klären muss (Platzhalter, unsichere Fachaussagen, fehlende Fotos, geschätzte Messwerte).
 
@@ -48,6 +48,7 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
 ## Medien
 
 - Nur aus `kurse/<id>/media/`, relativ eingebunden (`media/bild.jpg`) (P: Datei muss existieren, Bilder nur aus `media/`).
+- **Ausnahme:** `{.bildzuordnung bild="schema.svg"}` nennt die Datei ohne `media/`; alle anderen (`![…]`, `<img>`, `<video>`, `:::dateien`, `{.skizze bild="media/…"}`) mit `media/`. Tabelle: `referenz/bausteine.md`, „Pfade zu Dateien“.
 - Bilder höchstens 1200 px breit (der Bau verkleinert, das Repo bleibt aber groß), Videos klein halten (über 10 MB werden sie nicht eingebettet). Dateinamen ohne Leerzeichen und Umlaute.
 - SVGs mit festen Farben (`#3F9AD6` Blau, `#33416E` Navy, `#F58411` Orange, `#222222` Text), nie `var(--…)` oder `currentColor`.
 - Fotos der Autorin: verkleinern, z. B. `sips -Z 1200 foto.jpg --out kurse/<id>/media/foto.jpg` (Mac).

@@ -31,6 +31,9 @@ python3 tools/kurs_pruefen.py mzi --ohne-tests
 3. Branch vom aktuellen Stand:
    ```
    git status --short          # fremde Änderungen? nicht anfassen, Autorin fragen
+   ```
+   Unversionierte Ordner, die nicht zum Kurs gehören (z. B. persönliche Quellordner mit Notizen), einfach stehen lassen: nie committen, nie löschen.
+   ```
    git switch main && git pull
    git switch -c kurs/<id>
    ```
@@ -67,7 +70,10 @@ Reihenfolge, immer die erste passende Möglichkeit:
 3. **Neu:** nach `referenz/simulation-vorlage/LIESMICH.md` (kopieren, `ART`, `f(x)`, `skizze` anpassen, Test nach `tests/js/<id>/<name>.test.js` mit `DATEI = 'kurse/<id>/werkzeuge/<name>.js'`). Nie frei programmieren.
 4. **Platzhalter:** `### Simulation: … {.platzhalter}` + Absatz, was sie können soll; nichts darf auf diese Karte warten.
 
-Neue Werkzeuge in `referenz/werkzeuge.md` eintragen (Zeile in der Tabelle; sonst schlägt ein Test fehl) – das ist die einzige Datei außerhalb des Kurses, die du dafür änderst, und sie gehört in denselben Commit.
+Eine Simulation vorschlagen, wenn die Notizen eine nennen oder eine Größe im Labor schwer zu verändern ist (Masse, Wellenlänge, Einzelphotonen); im Zweifel die Autorin fragen, nicht von selbst bauen.
+Tests: Für jedes Werkzeug ist ein JS-Test Pflicht. Ein Python-Test `tests/py/test_<id>*.py` lohnt sich nur selten (z. B. wenn eine feste Kursstruktur geschützt werden soll).
+
+Neue oder abgewandelte Werkzeuge in `referenz/werkzeuge.md`, Tabelle „Werkzeuge anderer Kurse“, eintragen (sonst schlägt ein Test fehl) – das ist die einzige Datei außerhalb des Kurses, die du dafür änderst, und sie gehört in denselben Commit.
 
 ## Schritt 5: Prüfen bis „bereit“
 
@@ -100,12 +106,12 @@ git add kurse/<id> tests/js/<id>        # nur diese Pfade; ggf. auch tests/py/te
                                          # und .claude/skills/foexlab-kurs/referenz/werkzeuge.md
 git status --short                       # nichts Fremdes dabei?
 git commit -m "kurs(<id>): <Titel> neu angelegt"
-git push -u origin kurs/<id>
+git push -u origin kurs/<id>          # abgelehnt (keine Schreibrechte)? Autorin bittet Oliver um Zugang zu Ollei7/foexlab
 gh pr create --base main --title "Kurs <id>: <Titel>" --body "<2–3 Sätze: was der Kurs enthält, Platzhalter, Noch zu prüfen>"
 gh pr merge --auto --squash
 ```
 - Commit-Text auf Deutsch.
-- Meldet `gh pr merge --auto`, automatisches Zusammenführen sei nicht erlaubt: der Autorin sagen, dass Oliver das einmal im Repository einschalten muss (Anleitung im README); der Pull Request bleibt offen und kann später zusammengeführt werden.
+- Meldet `gh pr merge --auto`, automatisches Zusammenführen sei nicht erlaubt: der Autorin sagen, dass Oliver das einmal im Repository einschalten muss (Anleitung im README, Abschnitt „Für das Team“); der Pull Request bleibt offen und kann später zusammengeführt werden.
 - Der Autorin sagen: GitHub prüft den Kurs jetzt (einige Minuten). Ist die Prüfung grün, wird er automatisch übernommen und ist danach unter **https://ollei7.github.io/foexlab/<id>/** öffentlich zu sehen (Repository: https://github.com/Ollei7/foexlab).
 - Stand abfragen: `gh pr checks --watch`. Rot → `gh pr checks` und das Protokoll lesen, im eigenen Kurs beheben, Schritt 5, neuer Commit, `git push` – das automatische Zusammenführen bleibt eingeschaltet.
 - Am Ende die Liste „Noch zu prüfen“ aus `AENDERUNGEN.md` und die Platzhalter nennen.

@@ -33,10 +33,10 @@ Denkt an eine Schaukel mit langen und mit kurzen Seilen.
 
 ### Messreihe: Periodendauer {.messtabelle #messreihe}
 
-Messt für mindestens fünf Fadenlängen die Zeit für zehn Schwingungen.
+Messt für mindestens fünf Fadenlängen (in cm) die Zeit für zehn Schwingungen.
 
 :::spalten
-L | Fadenlänge L | m
+L | Fadenlänge L | cm
 t10 | Zeit für 10 Schwingungen | s
 T = t10/10 | Periodendauer T | s
 T2 = T^2 | Quadrat der Periodendauer | s²

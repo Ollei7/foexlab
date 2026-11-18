@@ -1,6 +1,6 @@
 # Bausteine nach Absicht
 
-Kurzbeispiele zu allen Bausteinen aus `docs/FORMAT.md` (dort die vollständige Beschreibung). `##` = Karte (eine Ansicht am iPad), `###` = Feld bzw. Frage. Jedes Feld bekommt eine feste ID `#id`, jede Karte `{#id}`. Vollständiges Beispiel: `referenz/beispielkurs/`.
+Kurzbeispiele zu allen Bausteinen aus `docs/FORMAT.md` (dort die vollständige Beschreibung). Dateipfade: siehe „Pfade zu Dateien“ unten – **nur `.bildzuordnung bild=` steht ohne `media/`**. `##` = Karte (eine Ansicht am iPad), `###` = Feld bzw. Frage. Jedes Feld bekommt eine feste ID `#id`, jede Karte `{#id}`. Vollständiges Beispiel: `referenz/beispielkurs/`.
 
 ## Gliederung
 
@@ -35,7 +35,7 @@ Wie ändert sich die Periodendauer, wenn …? Begründet kurz.
 ### Beobachtung {.frei sperrt #beobachtung}
 Beschreibt, was ihr seht.
 :::loesung
-Musterlösung (Knopf „Lösung anzeigen“; im PDF nur bei musterloesungen: ja)
+Musterlösung (Knopf „Lösung anzeigen“; im PDF nur bei `musterloesungen: true` in kurs.yml)
 :::
 ```
 Schalter: `{.frei stift}` (startet im Stiftmodus), `optional` (zählt nicht für `felder:`), `platzhalter="1. … 2. …"`. `:::hinweis` = Rückmeldung/Musterlösung nach „Prüfen“.
@@ -76,8 +76,8 @@ Mehrere richtig: `{.mc .mehrfach}`; Teilpunkte `- [50%] …`. Bei `sperrt` genau
 | Begriffe zuordnen | `### … {.zuordnung sperrt #id}` + `:::paare` mit `Begriff => Zuordnung`, Ablenker `=> Ablenker` |
 | kurze Textantwort | `### … {.kurz #id}` + `:::antworten` mit `= Antwort \|\| Feedback`, `= [50%] teilweise`, `*` als Platzhalter; `{.kurz .gross}` = Groß/Klein beachten |
 | Zahl mit Toleranz | `### … {.zahl einheit="cm" #id}` + `:::antworten` mit `= 1.3 ± 0.05` |
-| Beschriftungen auf einem Bild wählen | `### … {.bildzuordnung bild="schema.png" #id}` + `:::marken` mit `x,y = Label`, `= Ablenker` |
-| Beschriftungen auf ein Bild ziehen | `### … {.bildzuordnung ziehen sperrt bild="schema.svg" #id}` (bei SVG: Koordinaten in SVG-Einheiten) |
+| Beschriftungen auf einem Bild wählen | `### … {.bildzuordnung bild="schema.png" #id}` (Datei `media/schema.png`, im Attribut **ohne** `media/`) + `:::marken` mit `x,y = Label`, `= Ablenker` |
+| Beschriftungen auf ein Bild ziehen | `### … {.bildzuordnung ziehen sperrt bild="schema.svg" #id}` (Datei `media/schema.svg`, Attribut ohne `media/`; bei SVG: Koordinaten in SVG-Einheiten) |
 | Quiz-Serie, öffnet etwas | `## Verständnisfragen {.quiz oeffnet="<kapitel- oder karten-id>"}`, darunter je Frage `### … {.mc}`; `:::nachschlagen` mit Karten-ID ergänzt „Hier nochmal nachschlagen“ |
 
 ## Messreihe mit Diagramm
@@ -104,10 +104,10 @@ Formeln: `+ - * / ^`, Klammern, `pi`, `sqrt sin cos tan ln log`.
 | Absicht | Baustein |
 |---|---|
 | Foto aufnehmen | `### Foto: Muster auf dem Schirm {.foto sperrt #foto-muster}` |
-| zeichnen, optional auf Vorlage | `### Strahlengang skizzieren {.skizze bild="media/aufbau.jpg" #skizze}` |
+| zeichnen, optional auf Vorlage | `### Strahlengang skizzieren {.skizze bild="media/aufbau.jpg" #skizze}` (Attribut **mit** `media/`; nur JPG/PNG, ein SVG bricht den Bau ab) |
 | Material abhaken | `### Materialliste {.checkliste sperrt #material}` + Listenpunkte `- Laser` (oder `:::liste`, eine Zeile je Punkt) |
 
-## Anleitung, Video oder Anleitung
+## Anleitung und Video
 
 | Absicht | Baustein |
 |---|---|
@@ -115,6 +115,21 @@ Formeln: `+ - * / ^`, Klammern, `pi`, `sqrt sin cos tan ln log`.
 | zwischen Video und Text wechseln | `### Hilfe beim Aufbau {.umschalter}` mit `:::ansicht Video` … `:::` und `:::ansicht Anleitung` … `:::` |
 | Video | `<video controls><source src="media/aufbau.mp4"></video>` |
 | Bild | `![Alt-Text](media/bild.jpg)` oder `<img src="media/bild.jpg" alt="…" width="300">` |
+
+## Pfade zu Dateien
+
+Alle Dateien liegen in `kurse/<id>/media/`. Was im Text steht, unterscheidet sich je Baustein (so liest es die Engine):
+
+| Baustein | Schreibweise | Pfad relativ zu |
+|---|---|---|
+| Bild Markdown / HTML | `![Alt](media/bild.jpg)`, `<img src="media/bild.jpg">` | Kursordner (mit `media/`) |
+| Video | `<video controls><source src="media/film.mp4"></video>`, `poster="media/bild.jpg"` | Kursordner (mit `media/`) |
+| Link, PDF, HTML-Datei | `[Text](media/datei.pdf)` | Kursordner (mit `media/`) |
+| `:::dateien` | eine Zeile `media/datei.pdf` je Datei | Kursordner (mit `media/`) |
+| `{.skizze bild="…"}` | `bild="media/vorlage.jpg"` (JPG/PNG) | Kursordner (mit `media/`) |
+| `{.bildzuordnung bild="…"}` | `bild="schema.svg"` | Ordner `media/` (**ohne** `media/`) |
+
+Hinweis: `kurs_pruefen` meldet bei `{.skizze bild="media/…"}` zurzeit fälschlich „media/media/… fehlt“ (Fehler im Prüfwerkzeug, gemeldet). Bis zur Korrektur die Skizze ohne Vorlagenbild anlegen oder das Bild per `![…](media/…)` darüber zeigen und das in „Noch zu prüfen“ notieren.
 
 ## Freischaltung
 

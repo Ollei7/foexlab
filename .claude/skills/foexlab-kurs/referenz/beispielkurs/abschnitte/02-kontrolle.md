@@ -7,26 +7,26 @@ grund: "Öffnet sich, wenn ihr die Auswertung in Kapitel 1 erledigt habt."
 
 ## Kurze Kontrolle {#kontrolle}
 
-### Kontrollfrage: Masse {.mc sperrt #kontrolle-masse}
+### Kontrollfrage: Kürzerer Faden {.mc sperrt #kontrolle-kuerzer}
 
-Ihr hängt an denselben Faden einen doppelt so schweren Pendelkörper. Was passiert mit der Periodendauer?
+Ihr verkürzt den Faden von 100 cm auf 25 cm. Was passiert mit der Periodendauer?
 
 :::antworten
-- [ ] Sie wird doppelt so groß.
-- [x] Sie bleibt gleich.
-- [ ] Sie wird halb so groß.
+- [ ] Sie wird viermal so klein.
+- [x] Sie wird halb so groß.
+- [ ] Sie bleibt gleich.
 :::
 :::richtig
-Richtig: Die Masse hat keinen Einfluss auf die Periodendauer.
+Richtig: Ein Viertel der Länge ergibt die halbe Periodendauer.
 :::
 :::falsch
-Noch nicht. In der Formel für die Periodendauer kommt die Masse nicht vor.
+Noch nicht. Schaut in eure Messreihe oder Simulation: Welche Periodendauer gehört zu 100 cm, welche zu 25 cm?
 :::
 
 ### Ergebnis in eigenen Worten {.frei #ergebnis}
 
-Fasst zusammen, wovon die Periodendauer eines Fadenpendels abhängt und wovon nicht.
+Fasst zusammen, wie die Periodendauer eines Fadenpendels von der Fadenlänge abhängt.
 
 :::loesung
-Die Periodendauer hängt nur von der Fadenlänge (und der Fallbeschleunigung) ab, nicht von der Masse.
+Je länger der Faden, desto größer die Periodendauer. Sie wächst mit der Wurzel aus der Länge: vierfache Länge, doppelte Periodendauer.
 :::
