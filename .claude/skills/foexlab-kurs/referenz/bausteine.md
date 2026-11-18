@@ -129,8 +129,6 @@ Alle Dateien liegen in `kurse/<id>/media/`. Was im Text steht, unterscheidet sic
 | `{.skizze bild="…"}` | `bild="media/vorlage.jpg"` (JPG/PNG) | Kursordner (mit `media/`) |
 | `{.bildzuordnung bild="…"}` | `bild="schema.svg"` | Ordner `media/` (**ohne** `media/`) |
 
-Hinweis: `kurs_pruefen` meldet bei `{.skizze bild="media/…"}` zurzeit fälschlich „media/media/… fehlt“ (Fehler im Prüfwerkzeug, gemeldet). Bis zur Korrektur die Skizze ohne Vorlagenbild anlegen oder das Bild per `![…](media/…)` darüber zeigen und das in „Noch zu prüfen“ notieren.
-
 ## Freischaltung
 
 | Absicht | Baustein |

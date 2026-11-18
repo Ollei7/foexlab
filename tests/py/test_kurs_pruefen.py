@@ -96,6 +96,21 @@ def test_medien_fehlen():
     assert gefunden(b, "bilder/extern.png", "media"), texte(b)
 
 
+def test_skizze_mit_vorlagenbild_bereit():
+    # Skizze: bild= relativ zum Kursordner (mit media/); Bildzuordnung: bild= relativ zu media/ – wie die Engine
+    b = bericht("skizze-vorlage")
+    assert texte(b) == [] and b.bereit
+
+
+def test_skizze_vorlagenbild_fehlt():
+    b = bericht("skizze-vorlage-fehlt")
+    assert gefunden(b, "media/fehlt.png", "01-start.md:"), texte(b)
+    assert not any("media/media" in t for t in texte(b)), texte(b)
+    assert gefunden(b, "vorlage.png", "nicht im Ordner media"), texte(b)   # Skizze: bild= braucht media/
+    assert len(texte(b)) == 2, texte(b)                                   # Engine-Warnung nicht doppelt
+    assert not b.bereit
+
+
 def test_kurs_id_ungueltig(tmp_path, capsys):
     ziel = tmp_path / "Mein Kurs"
     shutil.copytree(os.path.join(FAELLE, "gut"), ziel)

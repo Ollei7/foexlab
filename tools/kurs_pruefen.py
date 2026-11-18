@@ -255,7 +255,7 @@ def baue_und_lese(m, tmp):
 # ---------------------------------------------------------------- Prüfungen (je eine Funktion)
 
 MATHJAX = re.compile(r"^(Formeln:|\d+ Formel\(n\) bleiben als TeX)")
-BEREITS_GEPRUEFT = re.compile(r"^(Datei fehlt:|Werkzeug ‚|Bild \S+ fehlt$)")   # prüft kurs_pruefen genauer (mit Zeile) selbst
+BEREITS_GEPRUEFT = re.compile(r"^(Datei fehlt:|Werkzeug ‚|Bild \S+ fehlt$|.*: Vorlage \S+ fehlt$)")   # prüft kurs_pruefen genauer (mit Zeile) selbst
 
 
 def pruefe_warnungen(m, warnungen, einrichtung):
@@ -447,6 +447,9 @@ MEDIEN_REGELN = (
     ("bild", re.compile(r"\bposter=\"([^\"]+)\"")),
     ("medien", re.compile(r"\bbild=\"([^\"]+)\"")),
 )
+# bild="…" liest die Engine je Baustein anders: Bildzuordnung relativ zu media/ (fragen.py), Skizze relativ zum Kursordner (bausteine.py)
+SKIZZE = re.compile(r"\{[^}]*\.skizze\b")
+BILDZUORDNUNG = re.compile(r"\{[^}]*\.bildzuordnung\b")
 EXTERN = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|#|//)", re.I)
 
 
@@ -532,7 +535,10 @@ def pruefe_medien(m):
             for art, pfad in funde:
                 if EXTERN.match(pfad): continue
                 rel = urllib.parse.unquote(pfad)
-                if art == "medien": rel = "media/" + rel
+                if art == "medien":
+                    if SKIZZE.search(zeile): art = "bild"            # Vorlagenbild: Pfad wie geschrieben (media/…)
+                    elif BILDZUORDNUNG.search(zeile): rel = "media/" + rel
+                    else: continue                                   # andere Bausteine lesen bild= nicht
                 ort = f"{sec['fn']}:{n}"
                 if (rel, ort) in gesehen: continue
                 gesehen.add((rel, ort))
