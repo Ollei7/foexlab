@@ -6,7 +6,7 @@ Eine Zeile je Befund („– Text (Ort)“), danach ggf. die Liste der Platzhalt
 „bereit“ oder „noch nicht bereit (n Punkte)“.
 Exit 0: bereit, 1: nicht bereit, 2: Einrichtungsproblem oder falsche Eingabe (Meldung auf Deutsch, nie ein Traceback).
 """
-import argparse, collections, importlib, json, os, re, shutil, sys, tempfile, urllib.parse
+import argparse, collections, glob, importlib, json, os, re, shutil, subprocess, sys, tempfile, urllib.parse
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 
@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.join(ROOT, "engine"))
 NODE_MODULES = os.path.join(ROOT, "node_modules")
 KURS_ID = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PAKETE = (("PIL", "Pillow"), ("markdown", "markdown"), ("yaml", "PyYAML"))
+TEST_ZEITLIMIT = 300   # Sekunden je Testlauf (Node bzw. pytest)
 MATHJAX_HINWEIS = "MathJax fehlt – einmal `npm install` ausführen (im Ordner foexlab). Ohne MathJax bleiben Formeln unlesbar."
 
 
@@ -423,7 +424,7 @@ def pruefe_werkzeuge(m, tests_dir=None):
                     if name not in vorhanden:
                         out.append(Befund(f"Das Werkzeug „{name}“ wird benutzt, aber die Datei werkzeuge/{name}.js fehlt", m.ort_feld(q["id"])))
     ordner = os.path.join(m.kurs_dir, "werkzeuge")
-    tests_dir = tests_dir or os.path.join(ROOT, "tests", "js", m.id)
+    tests_dir = tests_dir or tests_ordner(m.kurs_dir, m.id)[0]
     inhalt = ""
     if os.path.isdir(tests_dir):
         for wurzel, _, dateien in os.walk(tests_dir):
@@ -447,6 +448,72 @@ MEDIEN_REGELN = (
     ("medien", re.compile(r"\bbild=\"([^\"]+)\"")),
 )
 EXTERN = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|#|//)", re.I)
+
+
+# ---------------------------------------------------------------- Tests des Kurses
+
+def tests_ordner(kurs_dir, kid):
+    """(JS-Ordner, Ordner der Python-Tests, Dateimuster dort) der Kurstests.
+    Kurse in kurse/ haben ihre Tests im Repository (tests/js/<kurs>/, tests/py/test_<kurs>*.py);
+    ein Kurs außerhalb davon bringt sie in <Kursordner>/tests/ mit."""
+    if os.path.dirname(os.path.normpath(kurs_dir)) == os.path.join(ROOT, "kurse"):
+        return (os.path.join(ROOT, "tests", "js", kid), os.path.join(ROOT, "tests", "py"), f"test_{kid.replace('-', '_')}*.py")
+    return (os.path.join(kurs_dir, "tests", "js"), os.path.join(kurs_dir, "tests", "py"), "test_*.py")
+
+
+def _tap_fehler(text):
+    """Namen der fehlgeschlagenen Einzeltests aus der TAP-Ausgabe von node --test (ohne übergeordnete Gruppen)."""
+    offen = []   # (Einrückung, Name)
+    for zeile in text.splitlines():
+        t = re.match(r"^(\s*)not ok \d+ - (.*?)(?:\s+#.*)?$", zeile)
+        if not t: continue
+        tiefe, name = len(t.group(1)), t.group(2).strip()
+        kinder = [o for o in offen if o[0] > tiefe]
+        offen = [o for o in offen if o[0] <= tiefe]
+        if not kinder: offen.append((tiefe, name))
+    return [n for _, n in offen]
+
+
+def _lauf(befehl):
+    """Startet einen Testlauf im Repository-Ordner; (Ausgabe, Rückgabecode) oder None bei Zeitüberschreitung."""
+    try:
+        r = subprocess.run(befehl, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TEST_ZEITLIMIT)
+    except subprocess.TimeoutExpired:
+        return None
+    return (r.stdout or "") + (r.stderr or ""), r.returncode
+
+
+def pruefe_kurstests(m):
+    """Führt nur die Tests dieses Kurses aus. → (Befunde, Rohausgabe)"""
+    js, py_ordner, py_muster = tests_ordner(m.kurs_dir, m.id)
+    out, roh = [], []
+    js_dateien = sorted(glob.glob(os.path.join(glob.escape(js), "*.test.js"))) if os.path.isdir(js) else []
+    py_dateien = sorted(glob.glob(os.path.join(glob.escape(py_ordner), py_muster)))
+    zu_lang = lambda art: Befund(f"Tests brauchen zu lange: die {art}-Tests laufen länger als {TEST_ZEITLIMIT} Sekunden – vermutlich hängt ein Test oder läuft endlos", "Tests")
+    if js_dateien:
+        erg = _lauf(["node", "--test", "--test-reporter=tap"] + js_dateien)
+        if erg is None: out.append(zu_lang("JavaScript"))
+        else:
+            text, code = erg
+            roh.append("Kurstests (JavaScript):"); roh += ["  " + z for z in text.splitlines()]
+            namen = _tap_fehler(text)
+            for n in namen: out.append(Befund(f"Test ‚{n}‘ schlägt fehl", "Tests"))
+            if code != 0 and not namen:
+                out.append(Befund("Die JavaScript-Tests des Kurses sind fehlgeschlagen (Einzelheiten mit --details)", "Tests"))
+    if py_dateien:
+        erg = _lauf([sys.executable, "-m", "pytest", "-q", "--tb=short", "-rfE", "-p", "no:cacheprovider"] + py_dateien)
+        if erg is None: out.append(zu_lang("Python"))
+        else:
+            text, code = erg
+            roh.append("Kurstests (Python):"); roh += ["  " + z for z in text.splitlines()]
+            namen = []
+            for z in text.splitlines():
+                t = re.match(r"^(?:FAILED|ERROR) \S+?::(\S+)", z) or re.match(r"^ERROR (\S+?\.py)\b", z)
+                if t: namen.append(os.path.basename(t.group(1)))
+            for n in dict.fromkeys(namen): out.append(Befund(f"Test ‚{n}‘ schlägt fehl", "Tests"))
+            if code not in (0, 5) and not namen:
+                out.append(Befund("Die Python-Tests des Kurses sind fehlgeschlagen (Einzelheiten mit --details)", "Tests"))
+    return out, roh
 
 
 def pruefe_medien(m):
@@ -536,6 +603,10 @@ def pruefe(kurs_dir, tests=True):
         for check in (pruefe_leer, pruefe_freischaltung, pruefe_kontrollfragen, pruefe_eindeutigkeit, pruefe_werkzeuge, pruefe_medien):
             b.befunde += check(m)
         b.platzhalter = platzhalter_liste(m)
+        if tests:
+            fehler, roh = pruefe_kurstests(m)
+            b.befunde += fehler
+            b.rohausgabe += roh
     except Exception as e:
         raise Pruefwerkzeugfehler(f"Beim Prüfen von {kurs_dir} ist im Prüfwerkzeug selbst etwas schiefgegangen ({type(e).__name__}: {e}). Bitte melden") from e
     return b
@@ -561,7 +632,7 @@ def ausgeben(b, details=False, ausgabe=print):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Prüft einen foeXlab-Kurs vor dem Veröffentlichen.")
     ap.add_argument("kurs", help="Kurs-Kennung (kurse/<kennung>) oder Pfad zum Kursordner")
-    ap.add_argument("--ohne-tests", action="store_true", help="Werkzeug-Tests nicht ausführen")
+    ap.add_argument("--ohne-tests", action="store_true", help="Tests des Kurses nicht ausführen")
     ap.add_argument("--details", action="store_true", help="auch die Rohausgabe des Bauens zeigen")
     args = ap.parse_args(argv)
     for strom in (sys.stdout, sys.stderr):

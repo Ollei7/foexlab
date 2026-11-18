@@ -2,7 +2,7 @@
   "name": "foexlab",
   "private": true,
   "scripts": {
-    "test": "node --test tests/js/*.test.js tests/js/mzi/*.test.js"
+    "test": "node tools/js_tests.js"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.6",

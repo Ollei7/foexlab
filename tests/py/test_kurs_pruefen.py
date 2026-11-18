@@ -218,3 +218,73 @@ def test_pruefwerkzeug_fehler_ohne_traceback(monkeypatch, capsys):
     assert kp.main([os.path.join(FAELLE, "gut"), "--ohne-tests"]) == 2
     out = capsys.readouterr().out
     assert "Traceback" not in out and "melden" in out
+
+
+# ---------------------------------------------------------------- Kurstests, Pfadaufruf
+
+def kopie_von_gut(tmp_path, name="kopie"):
+    ziel = tmp_path / name
+    shutil.copytree(os.path.join(FAELLE, "gut"), ziel)
+    (ziel / "kurs.yml").write_text(f'titel: "Kopie"\nid: "{name}"\n', encoding="utf-8")
+    return ziel
+
+
+def test_kurstests_gruen_mzi():
+    b = kp.pruefe("kurse/mzi")
+    assert texte(b) == [] and b.einrichtung == [] and b.bereit
+
+
+def test_kaputter_kurstest():
+    b = kp.pruefe(os.path.join(FAELLE, "kurstest-rot"))
+    assert len(b.befunde) == 1
+    assert "Test ‚Messwert wird richtig umgerechnet‘ schlägt fehl" in b.befunde[0].text
+    alles = " ".join(texte(b))
+    assert "Summe stimmt" not in alles and "AssertionError" not in alles and "    at " not in alles
+    assert any("AssertionError" in z for z in b.rohausgabe)
+
+
+def test_kaputter_kurstest_cli(capsys):
+    assert kp.main([os.path.join(FAELLE, "kurstest-rot")]) == 1
+    out = capsys.readouterr().out
+    assert "Traceback" not in out and "AssertionError" not in out
+    assert out.rstrip("\n").splitlines()[-1] == "noch nicht bereit (1 Punkt)"
+    assert kp.main([os.path.join(FAELLE, "kurstest-rot"), "--details"]) == 1
+    assert "AssertionError" in capsys.readouterr().out
+
+
+def test_ohne_tests_laesst_roten_test_aus():
+    assert kp.pruefe(os.path.join(FAELLE, "kurstest-rot"), tests=False).bereit
+
+
+def test_pfad_statt_id(tmp_path):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "tests" / "js").mkdir(parents=True)
+    (ziel / "tests" / "js" / "gruen.test.js").write_text("require('node:test')('ok', () => {});\n", encoding="utf-8")
+    assert kp.pruefe(str(ziel)).bereit
+    (ziel / "tests" / "js" / "rot.test.js").write_text("require('node:test')('kaputt hier', () => { throw new Error('x'); });\n", encoding="utf-8")
+    b = kp.pruefe(str(ziel))
+    assert gefunden(b, "Test ‚kaputt hier‘ schlägt fehl") and len(b.befunde) == 1
+
+
+def test_python_test_des_kurses(tmp_path):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "tests" / "py").mkdir(parents=True)
+    (ziel / "tests" / "py" / "test_kopie.py").write_text("def test_gut():\n    assert True\n\ndef test_schlecht():\n    assert 1 == 2\n", encoding="utf-8")
+    b = kp.pruefe(str(ziel))
+    assert gefunden(b, "Test ‚test_schlecht‘ schlägt fehl") and len(b.befunde) == 1
+    assert not any("assert" in x.text for x in b.befunde)
+
+
+def test_test_zu_langsam(tmp_path, monkeypatch):
+    ziel = kopie_von_gut(tmp_path)
+    (ziel / "tests" / "js").mkdir(parents=True)
+    (ziel / "tests" / "js" / "lahm.test.js").write_text("require('node:test')('lahm', async () => { await new Promise(r => setTimeout(r, 20000)); });\n", encoding="utf-8")
+    monkeypatch.setattr(kp, "TEST_ZEITLIMIT", 2)
+    b = kp.pruefe(str(ziel))
+    assert gefunden(b, "Tests brauchen zu lange")
+
+
+def test_einrichtung_vor_tests(monkeypatch):
+    monkeypatch.setattr(kp, "NODE_MODULES", "/gibt/es/nicht")
+    b = kp.pruefe(os.path.join(FAELLE, "kurstest-rot"))
+    assert b.einrichtung and b.befunde == []
