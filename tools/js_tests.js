@@ -1,4 +1,4 @@
-// Führt alle JavaScript-Tests unter tests/js/ aus (auch in Unterordnern), auf allen Systemen und mit Node 20+.
+// Führt alle JavaScript-Tests unter tests/js/ und .claude/skills/ aus (auch in Unterordnern), auf allen Systemen und mit Node 20+.
 // Aufruf: npm test
 'use strict';
 const fs = require('fs');
@@ -15,6 +15,9 @@ function sammle(ordner) {
   }
   return out;
 }
-const dateien = sammle(path.join(wurzel, 'tests', 'js')).sort();
+// Auch die Tests der Skill-Vorlagen unter .claude/skills/ (falls der Ordner existiert)
+const skills = path.join(wurzel, '.claude', 'skills');
+const dateien = sammle(path.join(wurzel, 'tests', 'js')).concat(fs.existsSync(skills) ? sammle(skills) : []).sort();
+if (!dateien.length) { console.error('Keine Testdateien gefunden (erwartet: tests/js/**/*.test.js).'); process.exit(1); }
 const r = spawnSync(process.execPath, ['--test'].concat(dateien), { cwd: wurzel, stdio: 'inherit' });
 process.exit(r.status === null ? 1 : r.status);
