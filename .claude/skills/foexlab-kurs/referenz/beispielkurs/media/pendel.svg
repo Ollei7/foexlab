@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200" role="img" aria-label="Fadenpendel mit Fadenlänge L">
+  <rect x="0" y="0" width="240" height="200" fill="#FFFFFF"/>
+  <rect x="60" y="10" width="120" height="8" fill="#33416E"/>
+  <line x1="120" y1="18" x2="160" y2="150" stroke="#222222" stroke-width="2"/>
+  <line x1="120" y1="18" x2="120" y2="170" stroke="#999999" stroke-width="1" stroke-dasharray="4 4"/>
+  <circle cx="160" cy="150" r="14" fill="#F58411"/>
+  <text x="150" y="80" font-size="14" fill="#222222">L</text>
+</svg>
