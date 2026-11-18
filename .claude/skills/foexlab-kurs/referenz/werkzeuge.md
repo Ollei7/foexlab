@@ -1,7 +1,7 @@
 # Vorhandene Werkzeuge (Simulationen)
 
 Werkzeuge sind JavaScript-Dateien in `kurse/<kurs>/werkzeuge/`; im Kurstext: `### Titel {.werkzeug name="<art>" … #id}`.
-Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle“. Diese Liste von Hand pflegen: Jedes neue Werkzeug unter `kurse/*/werkzeuge/` (außer `*kern*.js`) bekommt hier einen Eintrag – ein Test (`tests/py/test_skill_beispielkurs.py`) prüft das.
+Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle“. Diese Datei listet die Werkzeuge des Kurses `mzi` und wird von Kurs-Zweigen **nicht** geändert. Jeder andere Kurs führt seine Werkzeuge in einer eigenen Datei `kurse/<id>/WERKZEUGE.md` (siehe „Werkzeuge anderer Kurse“). Jedes Werkzeug unter `kurse/*/werkzeuge/` (außer `*kern*.js`) muss hier oder in der `WERKZEUGE.md` eines Kurses stehen – ein Test (`tests/py/test_skill_beispielkurs.py`) prüft das.
 
 ## Reihenfolge der Wahl
 
@@ -61,17 +61,19 @@ Beispiele aus `kurse/mzi/abschnitte/`:
 
 ## Werkzeuge anderer Kurse
 
-Hier trägt jeder Kurs mit eigenen (neuen oder abgewandelten) Werkzeugen eine Zeile ein, im selben Commit wie das Werkzeug. Name in Backticks, sonst erkennt der Test den Eintrag nicht. Das erste echte Werkzeug **ersetzt** die Zeile „(noch keine)“; jedes weitere kommt als neue Zeile darunter. Zusatzattribute (z. B. `n`) in der Spalte „Konfig“ nennen.
+Jeder Kurs mit eigenen (neuen oder abgewandelten) Werkzeugen legt die Datei `kurse/<id>/WERKZEUGE.md` an und trägt dort je Werkzeug eine Zeile ein, im selben Commit wie das Werkzeug. So ändern zwei Kurse nie dieselbe Datei (keine Konflikte). Welche Werkzeuge es schon gibt: diese Datei **und** alle `kurse/*/WERKZEUGE.md` lesen (`ls kurse/*/WERKZEUGE.md`). Name in Backticks, sonst erkennt der Test den Eintrag nicht. Zusatzattribute (z. B. `n`) in der Spalte „Konfig“ nennen.
 
-Format einer Zeile (Beispiel, noch kein echtes Werkzeug):
+Inhalt von `kurse/<id>/WERKZEUGE.md` (Beispiel für einen Kurs `brechung`):
 
 ```
-| `brechung` | `brechung` | Einfallswinkel per Regler, Brechungswinkel messen (aus der Vorlage) | `min`, `max`, `schritt`, `n` (Brechzahl, Standard 1.5) | `tests/js/brechung/brechung.test.js` |
-```
+# Werkzeuge des Kurses brechung
 
 | Werkzeug | Kurs | Zweck | Konfig | Test |
 |---|---|---|---|---|
-| (noch keine) | | | | |
+| `brechung` | `brechung` | Einfallswinkel per Regler, Brechungswinkel messen (aus der Vorlage) | `min`, `max`, `schritt`, `n` (Brechzahl, Standard 1.5) | `tests/js/brechung/brechung.test.js` |
+```
+
+Der Beispielkurs hat so eine Datei: `referenz/beispielkurs/WERKZEUGE.md`.
 
 ## Beispiel aus der Vorlage
 

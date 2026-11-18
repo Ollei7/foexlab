@@ -8,7 +8,7 @@ description: Verwenden, wenn im Repository foexlab eine Experimentanleitung als 
 Die Autorin (Fachdidaktik, Lehrkraft) ist keine Programmiererin. Du schreibst den Kurs, führst alle Befehle selbst aus und erklärst Ergebnisse in einfachem Deutsch, ohne Fachbegriffe aus Git oder Programmierung. Niemand prüft den Code danach: `tools/kurs_pruefen.py` ist das Tor. Was dort „bereit“ sagt und auf GitHub grün ist, geht live.
 
 **Feste Grenzen** (Einzelheiten `referenz/regeln.md`):
-- Nur `kurse/<id>/`, `tests/js/<id>/` (und ggf. `tests/py/test_<id>*.py`, bei neuen Werkzeugen `referenz/werkzeuge.md`) anlegen oder ändern. Nie `engine/`, `tools/`, `docs/`, andere Kurse – außer die Autorin will ausdrücklich genau diesen bestehenden Kurs ändern.
+- Nur `kurse/<id>/` (eigene Werkzeuge in `kurse/<id>/WERKZEUGE.md`), `tests/js/<id>/` und ggf. `tests/py/test_<id>*.py` anlegen oder ändern. Nie `engine/`, `tools/`, `docs/`, `.claude/` (auch nicht `referenz/werkzeuge.md`), andere Kurse – außer die Autorin will ausdrücklich genau diesen bestehenden Kurs ändern.
 - Nur Bausteine aus `docs/FORMAT.md`; keine eigene HTML-Seite, keine eigene Logik am Format vorbei.
 - Nie `git add -A` / `git add .`, nie Force-Push, nie `gh pr merge --admin`.
 
@@ -21,8 +21,20 @@ Im Ordner `foexlab` ausführen:
 python3 tools/kurs_pruefen.py mzi --ohne-tests
 ```
 - Letzte Zeile „bereit“ → Umgebung reicht für die Prüfung.
-- „Die Umgebung ist noch nicht eingerichtet“ (Exit 2) → genannte Befehle ausführen, meist `python3 -m pip install -r requirements.txt` und `npm install`; Node.js fehlt → `brew install node` (Mac). Danach wiederholen.
+- „Die Umgebung ist noch nicht eingerichtet“ (Exit 2) → genannte Befehle ausführen, meist `python3 -m pip install -r requirements.txt` und `npm install`. Meldet pip „externally-managed-environment“: stattdessen `python3 -m pip install --user -r requirements.txt`. Node.js fehlt → `brew install node` (Mac mit Homebrew) oder den Installer von https://nodejs.org (LTS) laden und doppelklicken; danach ein neues Terminal öffnen. Danach wiederholen.
 - `gh auth status` → nicht angemeldet: der Autorin sagen, sie soll im Terminal `gh auth login` ausführen (GitHub.com, HTTPS, im Browser anmelden). Passwörter nie selbst eingeben.
+- `git config user.email` → leer oder keine Adresse auf `@users.noreply.github.com`: Das Repository ist öffentlich, die Adresse steht in jedem Commit. Der Autorin sagen: auf GitHub unter Settings → Emails „Keep my email addresses private“ einschalten, die dort gezeigte Adresse kopieren und eintragen mit `git config --global user.email "<id>+<name>@users.noreply.github.com"` (ihre echte Adresse von GitHub). Nie selbst eine Adresse erfinden oder eintragen; erst weiter, wenn sie gesetzt ist.
+
+## Angefangene Arbeit fortsetzen (vor Schritt 1)
+
+```
+git fetch origin
+git branch --list 'kurs/*'
+gh pr list --author @me --state open
+```
+- Gibt es `kurs/<id>` schon (die Autorin arbeitet an diesem Kurs weiter): `git switch kurs/<id> && git merge origin/main`, dann prüfen, wie weit der Kurs ist (`python3 tools/kurs_pruefen.py <id> --ohne-tests`, offener Pull Request?), und beim passenden Schritt weitermachen – nicht neu anfangen.
+- Offener Pull Request mit roter Prüfung: `gh pr checks` und das Protokoll des roten Checks lesen, im eigenen Kurs beheben, Schritt 5, Commit, `git push`.
+- Sonst: neuer Kurs ab Schritt 1.
 
 ## Schritt 1: Notizen lesen, Kurs-ID, Branch
 
@@ -78,7 +90,7 @@ Reihenfolge, immer die erste passende Möglichkeit:
 Eine Simulation vorschlagen, wenn die Notizen eine nennen oder eine Größe im Labor schwer zu verändern ist (Masse, Wellenlänge, Einzelphotonen); im Zweifel die Autorin fragen, nicht von selbst bauen.
 Tests: Für jedes Werkzeug ist ein JS-Test Pflicht. Bei Werkzeugen aus der Vorlage ersetzt du den Test „HIER ANPASSEN: Rechenvorschrift prüfen“ durch zwei physikalisch bekannte Werte deiner Formel (Regel für dich: `kurs_pruefen` kann nicht erkennen, ob die Werte stimmen). Ein Python-Test `tests/py/test_<id>*.py` lohnt sich nur selten (z. B. wenn eine feste Kursstruktur geschützt werden soll).
 
-Neue oder abgewandelte Werkzeuge in `referenz/werkzeuge.md`, Tabelle „Werkzeuge anderer Kurse“, eintragen (sonst schlägt ein Test fehl; das erste echte Werkzeug ersetzt die Zeile „(noch keine)“) – das ist die einzige Datei außerhalb des Kurses, die du dafür änderst, und sie gehört in denselben Commit.
+Neue oder abgewandelte Werkzeuge in `kurse/<id>/WERKZEUGE.md` eintragen (je Werkzeug eine Zeile, Format und Beispiel in `referenz/werkzeuge.md`, Abschnitt „Werkzeuge anderer Kurse“; sonst schlägt ein Test fehl). `referenz/werkzeuge.md` selbst nie ändern. Vorhandene Werkzeuge anderer Kurse: `ls kurse/*/WERKZEUGE.md`.
 
 ## Schritt 5: Prüfen bis „bereit“
 
@@ -107,8 +119,7 @@ python3 tools/devserver.py        # im Hintergrund starten, läuft bis zum Beend
 ## Schritt 7: Veröffentlichen
 
 ```
-git add kurse/<id> tests/js/<id>        # nur diese Pfade; ggf. auch tests/py/test_<id>*.py
-git add .claude/skills/foexlab-kurs/referenz/werkzeuge.md   # nur, wenn ein Werkzeug neu oder abgewandelt ist
+git add kurse/<id> tests/js/<id>        # nur diese Pfade (WERKZEUGE.md liegt in kurse/<id>); ggf. auch tests/py/test_<id>*.py
 git status --short                       # nichts Fremdes dabei?
 git commit -m "kurs(<id>): <Titel> neu angelegt"
 git push -u origin kurs/<id>          # abgelehnt (keine Schreibrechte)? Autorin bittet Oliver um Zugang zu Ollei7/foexlab
@@ -116,7 +127,8 @@ gh pr create --base main --title "Kurs <id>: <Titel>" --body "<2–3 Sätze: was
 gh pr merge --auto --squash
 ```
 - Commit-Text auf Deutsch.
-- Meldet `gh pr merge --auto`, automatisches Zusammenführen sei nicht erlaubt: der Autorin sagen, dass Oliver das einmal im Repository einschalten muss (Anleitung im README, Abschnitt „Für das Team“); der Pull Request bleibt offen und kann später zusammengeführt werden.
+- Meldet `gh pr merge --auto`, automatisches Zusammenführen sei nicht erlaubt: der Autorin sagen, dass Oliver das einmal im Repository einschalten muss (README, Abschnitt „Für Oliver: GitHub einrichten“); der Pull Request bleibt offen und kann später zusammengeführt werden.
+- Konflikt (`git push` abgelehnt, weil `main` weiter ist, oder GitHub meldet „conflicts“): `git fetch origin && git merge origin/main`; Konflikte so lösen, dass **beide** Seiten erhalten bleiben (eigene und fremde Zeilen), `git add <datei>` und `git commit`, dann Schritt 5 wiederholen und `git push`. Nie Force-Push.
 - Der Autorin sagen: GitHub prüft den Kurs jetzt (einige Minuten). Ist die Prüfung grün, wird er automatisch übernommen und ist danach unter **https://ollei7.github.io/foexlab/<id>/** öffentlich zu sehen (Repository: https://github.com/Ollei7/foexlab).
 - Stand abfragen: `gh pr checks --watch`. Rot → `gh pr checks` und das Protokoll lesen, im eigenen Kurs beheben, Schritt 5, neuer Commit, `git push` – das automatische Zusammenführen bleibt eingeschaltet.
 - Am Ende die Liste „Noch zu prüfen“ aus `AENDERUNGEN.md` und die Platzhalter nennen.

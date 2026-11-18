@@ -40,6 +40,13 @@ test('Regler: Konfiguration min/max/schritt wird übernommen', () => {
   assert.strictEqual(o.regler.min, '0'); assert.strictEqual(o.regler.max, '10');
 });
 
+test('Regler: Dezimalkomma in min/max/schritt ("0,5", "2,5")', () => {
+  const u = umgebung({ min: '0,5', max: '2,5', schritt: '0,5' });
+  assert.strictEqual(u.regler.min, '0.5'); assert.strictEqual(u.regler.max, '2.5'); assert.strictEqual(u.regler.step, '0.5');
+  u.setze('1.5'); u.uebernehmen();
+  assert.strictEqual(u.wert().werte[0].x, 1.5);
+});
+
 test('Regler setzen: die Skizze ändert sich', () => {
   const u = umgebung();
   const skizze = () => u.el.querySelector('[data-o="skizze"]').innerHTML;

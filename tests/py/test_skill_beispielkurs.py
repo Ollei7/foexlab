@@ -29,13 +29,16 @@ def test_beispielkurs_zeigt_die_haeufigen_bausteine():
 
 
 def test_werkzeugliste_vollstaendig():
-    text = lies(os.path.join(SKILL, "referenz", "werkzeuge.md"))
+    """Jedes Werkzeug steht in werkzeuge.md (mzi) oder in einer WERKZEUGE.md eines Kurses."""
+    kataloge = [os.path.join(SKILL, "referenz", "werkzeuge.md"), os.path.join(BEISPIEL, "WERKZEUGE.md")]
+    kataloge += sorted(glob.glob("kurse/*/WERKZEUGE.md"))
+    text = "\n".join(lies(p) for p in kataloge)
     fehlen = []
-    for pfad in sorted(glob.glob("kurse/*/werkzeuge/*.js")):
+    for pfad in sorted(glob.glob("kurse/*/werkzeuge/*.js") + glob.glob(os.path.join(BEISPIEL, "werkzeuge", "*.js"))):
         stem = os.path.basename(pfad)[:-3]
         if "kern" in stem: continue
         if not re.search(r"`" + re.escape(stem) + r"`", text): fehlen.append(pfad)
-    assert fehlen == [], f"in werkzeuge.md nicht genannt: {fehlen}"
+    assert fehlen == [], f"weder in werkzeuge.md noch in kurse/<id>/WERKZEUGE.md genannt: {fehlen}"
 
 
 def test_skill_frontmatter():

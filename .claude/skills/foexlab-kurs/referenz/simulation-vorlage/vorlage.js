@@ -51,7 +51,9 @@
       const t = String(c[a]).trim().replace(',', '.');
       k[a] = /^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t) ? parseFloat(t) : c[a];
     });
-    k.min = n(c.min, 0); k.max = n(c.max, 10); k.schritt = n(c.schritt, 1); k.einheit = c.einheit || ''; k.groesse = c.groesse || 'x';
+    // min/max/schritt aus k: dort ist das Komma schon ein Punkt ("0,5" → 0.5)
+    k.min = n(k.min, 0); k.max = n(k.max, 10); k.schritt = n(k.schritt, 1);
+    k.einheit = c.einheit || ''; k.groesse = c.groesse || 'x';
     if (k.schritt <= 0) k.schritt = 1;
     // Nachkommastellen der Schrittweite: darauf werden Reglerwerte gerundet (0.1 + 0.2 soll nicht 0.30000000000000004 sein)
     const ks = String(k.schritt).split('.')[1];

@@ -7,12 +7,12 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
 - **Engine nie ändern** (`engine/`, `docs/FORMAT.md`, `tools/`, `tests/js/*.test.js` der Engine). Fehlt ein Baustein, mit vorhandenen Bausteinen lösen oder Platzhalter; der Autorin sagen, was fehlt.
 - **Bestehende Kurse nur ändern, wenn die Autorin das ausdrücklich will** (und dann nur diesen Kurs).
 - Keine eigene HTML-Seite, kein eigenes Layout, kein eigenes Speichern am Format vorbei.
-- Nur eigene Dateien committen: `kurse/<id>/`, `tests/js/<id>/`, ggf. `tests/py/test_<id>*.py` und (bei neuen Werkzeugen) `.claude/skills/foexlab-kurs/referenz/werkzeuge.md`. Nie `git add -A` oder `git add .`.
+- Nur eigene Dateien committen: `kurse/<id>/` (eigene Werkzeuge stehen in `kurse/<id>/WERKZEUGE.md`), `tests/js/<id>/`, ggf. `tests/py/test_<id>*.py`. `.claude/skills/…` (auch `referenz/werkzeuge.md`) nie ändern – ein Kurs-Zweig, der das tut, wird auf GitHub rot. Nie `git add -A` oder `git add .`.
 
 ## Kursordner
 
-- `kurse/<id>/` mit `kurs.yml`, `abschnitte/NN-name.md`, `media/`, ggf. `werkzeuge/`, und `AENDERUNGEN.md`.
-- Kurs-ID nur `a-z`, `0-9` und einzelne `-` (keine Großbuchstaben, Umlaute, Leerzeichen); sie wird Internetadresse und Speicherschlüssel. Ordnername = `id` in `kurs.yml` (P).
+- `kurse/<id>/` mit `kurs.yml`, `abschnitte/NN-name.md`, `media/`, ggf. `werkzeuge/` und `WERKZEUGE.md` (Liste der eigenen Werkzeuge, siehe `referenz/werkzeuge.md`), und `AENDERUNGEN.md`.
+- Kurs-ID nur `a-z`, `0-9` und einzelne `-` (keine Großbuchstaben, Umlaute, Leerzeichen); sie wird Internetadresse und Speicherschlüssel. Nicht erlaubt sind Namen von Projektordnern: `docs`, `tools`, `tests`, `engine`, `server`, `archiv`, `kurse`, `dist`, `node_modules` (P). Ordnername = `id` in `kurs.yml` (P).
 - `kurs.yml`:
   ```
   titel: "Brechung am Halbzylinder"
@@ -26,7 +26,7 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
 
 - Jede Karte `## Titel {#karten-id}`, jedes Feld `### Titel {… #feld-id}`: feste, sprechende IDs, klein, mit Bindestrichen (`#vermutung-laenge`, `#messreihe-1`). Nie nachträglich ändern, sobald ein Kurs im Labor läuft (gespeicherte Eingaben hängen daran).
 - Kartentitel je Kapitel eindeutig (P). Feldtitel im ganzen Kurs eindeutig (P) – sie sind die Überschriften im Protokoll. Bei Wiederholung ein Präfix: „Aufbau 1: Hypothese“, „Aufbau 2: Hypothese“.
-- Feld-IDs im ganzen Kurs eindeutig (P).
+- Feld-IDs innerhalb einer Karte eindeutig (P). Gespeichert und in Verweisen benutzt wird die volle Kennung `kapitel/karte/feld` (z. B. `messung/k1/wert`); dieselbe Feld-ID in zwei Karten ist also erlaubt. Besser trotzdem sprechend und kursweit verschieden, dann sind Verweise (`vorhersage=`, `quelle=` …) leichter lesbar.
 
 ## Ablauf und Freischaltung
 
@@ -49,6 +49,7 @@ Gelernt aus den Umstellungen `mzi-photonen` und `mzi`. Was `tools/kurs_pruefen.p
 
 - Nur aus `kurse/<id>/media/`, relativ eingebunden (`media/bild.jpg`) (P: Datei muss existieren, Bilder nur aus `media/`).
 - **Ausnahme:** `{.bildzuordnung bild="schema.svg"}` nennt die Datei ohne `media/`; alle anderen (`![…]`, `<img>`, `<video>`, `:::dateien`, `{.skizze bild="media/…"}`) mit `media/`. Tabelle: `referenz/bausteine.md`, „Pfade zu Dateien“.
+- Fotos nur als JPG oder PNG, Grafiken auch als SVG (HEIC vom iPhone vorher umwandeln: `sips -s format jpeg foto.heic --out kurse/<id>/media/foto.jpg`); eine Datei, die sich nicht lesen lässt, meldet `kurs_pruefen` mit Namen (P).
 - Bilder höchstens 1200 px breit (der Bau verkleinert, das Repo bleibt aber groß), Videos klein halten (über 10 MB werden sie nicht eingebettet). Dateinamen ohne Leerzeichen und Umlaute.
 - SVGs mit festen Farben (`#3F9AD6` Blau, `#33416E` Navy, `#F58411` Orange, `#222222` Text), nie `var(--…)` oder `currentColor`.
 - Fotos der Autorin: verkleinern, z. B. `sips -Z 1200 foto.jpg --out kurse/<id>/media/foto.jpg` (Mac).
