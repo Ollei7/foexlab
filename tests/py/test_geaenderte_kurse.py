@@ -30,18 +30,40 @@ def test_cli_ohne_git_basis_meldet_deutsch():
     assert r.returncode == 2 and "Traceback" not in r.stderr and "Vergleich" in r.stderr
 
 
+def test_alle_wenn_fremd_nur_bei_dateien_ausserhalb_der_kurse(tmp_path):
+    (tmp_path / gk.BEISPIELKURS).mkdir(parents=True)
+    nur_kurs = ["kurse/mzi/kurs.yml", "tests/js/mzi/a.test.js", "tests/py/test_kurs_pruefen.py"]
+    assert gk.pruefziele(nur_kurs, KURSE, True, root=str(tmp_path)) == ["mzi"]
+    for fremd in ("engine/build.py", "tools/kurs_pruefen.py", ".claude/skills/foexlab-kurs/SKILL.md",
+                  "package.json", "tests/js/helfer.js", "tests/py/conftest.py", "README.md"):
+        assert gk.pruefziele(nur_kurs + [fremd], KURSE, True, root=str(tmp_path)) == \
+            ["mzi", "pendel-2", gk.BEISPIELKURS], fremd
+        assert gk.pruefziele(nur_kurs + [fremd], KURSE, False, root=str(tmp_path)) == ["mzi"], fremd
+    assert gk.pruefziele(["engine/x.py"], KURSE, True, root=str(tmp_path / "leer")) == ["mzi", "pendel-2"]
+
+
+def test_cli_alle_wenn_fremd_falsche_eingabe():
+    r = subprocess.run([sys.executable, "tools/geaenderte_kurse.py", "--alle-wenn-fremd"], capture_output=True, text=True)
+    assert r.returncode == 2 and "Aufruf" in r.stderr
+
+
+def test_beispielkurs_pfad_gibt_es():
+    assert os.path.isfile(os.path.join(gk.BEISPIELKURS, "kurs.yml"))
+
+
 # --- Regeln für kurs/*-Zweige
 
 def test_eigener_kurs_ist_erlaubt():
     d = ["kurse/pendel-2/kurs.yml", "tests/js/pendel-2/a.test.js", "tests/py/test_pendel_2_x.py",
-         ".claude/skills/foexlab-kurs/referenz/werkzeuge.md"]
+         "kurse/pendel-2/WERKZEUGE.md"]
     assert regeln.verstoesse("kurs/pendel-2", d, KURSE) == []
     assert regeln.verstoesse("kurs/pendel-2-ueberarbeitung", d, KURSE) == []
 
 
 def test_engine_server_tools_github_skill_sind_verboten():
     for datei in ("engine/build.py", "server/x.sh", "tools/kurs_pruefen.py", ".github/workflows/pruefen.yml",
-                  ".claude/skills/foexlab-kurs/SKILL.md", "README.md", "docs/FORMAT.md", "package.json"):
+                  ".claude/skills/foexlab-kurs/SKILL.md", ".claude/skills/foexlab-kurs/referenz/werkzeuge.md",
+                  "README.md", "docs/FORMAT.md", "package.json"):
         v = regeln.verstoesse("kurs/mzi", ["kurse/mzi/kurs.yml", datei], KURSE)
         assert len(v) == 1 and datei in v[0], datei
 

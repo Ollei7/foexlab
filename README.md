@@ -26,14 +26,22 @@ Gegen einen Ordner mit Markdown-Quellen (`# Teil`, `## Abschnitt`), abschnittswe
 
 Neue Experimentseiten entstehen im Ordner dieses Repositorys mit Claude Code: Ordner öffnen, Claude Code starten und beschreiben, was die Seite können soll – der Skill `foexlab-kurs` führt durch Aufbau, Prüfung und Veröffentlichung. Dafür brauchst du Schreibrechte im Repository; frag Oliver, er lädt dich ein. Claude legt einen Zweig `kurs/<id>` an und stellt einen Pull Request; sobald die automatische Prüfung grün ist, wird er von selbst übernommen. Die Vorschau deiner Seite findest du danach unter `https://ollei7.github.io/foexlab/<id>/` (wenige Minuten nach dem Übernehmen). Wie die fertigen Seiten auf den Raspberry Pi kommen, steht in `docs/pi-anleitung.md`.
 
+Einmal vorab: Das Repository ist öffentlich, und jede Änderung trägt deine Git-E-Mail-Adresse. Nimm dafür deine GitHub-„noreply“-Adresse statt deiner privaten oder dienstlichen: auf GitHub unter Settings → Emails „Keep my email addresses private“ einschalten, die dort angezeigte Adresse (`<nummer>+<name>@users.noreply.github.com`) kopieren und im Terminal eintragen:
+
+```bash
+git config --global user.email "<nummer>+<name>@users.noreply.github.com"
+```
+
+Claude prüft das zu Beginn und erfindet nie selbst eine Adresse.
+
 ## Für Oliver: GitHub einrichten (einmalig)
 
 1. Settings → Collaborators: Teammitglieder mit Schreibrechten einladen.
 2. Settings → General → Pull Requests: „Allow auto-merge“ einschalten (außerdem „Allow squash merging“; „Automatically delete head branches“ ist praktisch).
-3. Settings → Branches → Regel für `main` anlegen: „Require a pull request before merging“ (keine Freigabe nötig, also „Required approvals“ auf 0), „Require status checks to pass before merging“ mit dem Check `pruefen` (erscheint in der Auswahl erst nach dem ersten Lauf eines Pull Requests).
+3. Settings → Branches → Regel für `main` anlegen: „Require a pull request before merging“ (keine Freigabe nötig, also „Required approvals“ auf 0), „Require status checks to pass before merging“ mit den Checks `pruefen` **und** `python39` (beide erscheinen in der Auswahl erst nach dem ersten Lauf eines Pull Requests).
 4. Settings → Pages → Build and deployment → Source: „GitHub Actions“.
 
-Die Prüfung (`.github/workflows/pruefen.yml`) baut alle Kurse, prüft jeden geänderten Kurs mit `tools/kurs_pruefen.py` und lässt alle Tests laufen. Ein Zweig `kurs/…` darf nur den eigenen Kurs ändern (`tools/kurs_pr_regeln.py`); Änderungen an `engine/`, `server/`, `tools/`, `.github/` oder fremden Kursen macht Oliver auf einem anderen Zweig. Diese Regel ist ein Netz gegen Versehen, keine Zugriffskontrolle: wer Schreibrechte hat, könnte sie im selben Pull Request ändern. Nach jedem Übernehmen in `main` veröffentlicht `.github/workflows/veroeffentlichen.yml` die Seite und aktualisiert `foexlab-update.zip` im Release `letzter-stand`.
+Die Prüfung (`.github/workflows/pruefen.yml`) baut alle Kurse, prüft jeden geänderten Kurs mit `tools/kurs_pruefen.py` (ändert der Pull Request etwas außerhalb der Kurse, alle Kurse und den Beispielkurs des Skills) und lässt alle Tests laufen. Ein Zweig `kurs/…` darf nur den eigenen Kurs ändern (`tools/kurs_pr_regeln.py`); Änderungen an `engine/`, `server/`, `tools/`, `.github/` oder fremden Kursen macht Oliver auf einem anderen Zweig. Diese Regel ist ein Netz gegen Versehen, keine Zugriffskontrolle: wer Schreibrechte hat, könnte sie im selben Pull Request ändern. Nach jedem Übernehmen in `main` veröffentlicht `.github/workflows/veroeffentlichen.yml` die Seite und aktualisiert `foexlab-update.zip` im Release `letzter-stand`.
 
 ## Ordner
 

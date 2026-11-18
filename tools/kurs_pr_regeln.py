@@ -2,8 +2,8 @@
 """Was darf ein Zweig `kurs/<id>` ändern?
 
 Aufruf:  python3 tools/kurs_pr_regeln.py <zweig> <basis>     (z. B. kurs/pendel origin/main)
-Erlaubt sind nur: kurse/<id>/…, tests/js/<id>/…, tests/py/test_<id>….py und der Werkzeugkatalog des Skills.
-Alles andere (engine/, server/, tools/, .github/, fremde Kurse, übrige Skill-Dateien …) ergibt eine
+Erlaubt sind nur: kurse/<id>/… (auch kurse/<id>/WERKZEUGE.md), tests/js/<id>/…, tests/py/test_<id>….py.
+Alles andere (engine/, server/, tools/, .github/, fremde Kurse, alle Skill-Dateien …) ergibt eine
 deutsche Meldung und Exit 1. Zweige, die nicht mit kurs/ beginnen, sind frei. Exit 2: falsche Eingabe.
 """
 import os, posixpath, sys
@@ -11,7 +11,6 @@ import os, posixpath, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import geaenderte_kurse as gk
 
-KATALOG = ".claude/skills/foexlab-kurs/referenz/werkzeuge.md"
 PRAEFIX = "kurs/"
 
 
@@ -43,8 +42,6 @@ def verstoesse(zweig, dateien, kurse):
     ids = _alle_ids(kurse, sauber_liste)
     meldungen = []
     for datei in dateien:
-        if datei == KATALOG:
-            continue
         sauber = posixpath.normpath(datei) == datei and not datei.startswith("/")
         t = datei.split("/")
         if sauber and eigener:
@@ -60,7 +57,7 @@ def verstoesse(zweig, dateien, kurse):
             grund = "gehört zu einem anderen Kurs als dem Zweig %s" % zweig
         else:
             grund = "darf mit einem Kurs-Zweig nicht geändert werden"
-        meldungen.append("– %s: %s. Ein Kurs-Zweig darf nur den eigenen Kurs ändern (kurse/<id>/, tests/js/<id>/, tests/py/test_<id>….py und die Werkzeugliste des Skills). Diese Datei bitte aus dem Pull Request herausnehmen; für andere Änderungen Oliver fragen." % (datei, grund))
+        meldungen.append("– %s: %s. Ein Kurs-Zweig darf nur den eigenen Kurs ändern (kurse/<id>/, tests/js/<id>/, tests/py/test_<id>….py; eigene Werkzeuge in kurse/<id>/WERKZEUGE.md). Diese Datei bitte aus dem Pull Request herausnehmen; für andere Änderungen Oliver fragen." % (datei, grund))
     return meldungen
 
 

@@ -47,11 +47,13 @@ jobs:
       - name: Alle Kurse bauen
         run: python3 engine/build.py --alle
 
+      # Ändert der Pull Request etwas außerhalb der Kurse (Engine, Werkzeuge, Skill …),
+      # werden alle Kurse und der Beispielkurs geprüft.
       - name: Geänderte Kurse prüfen
         env:
           BASIS: origin/${{ github.base_ref }}
         run: |
-          kurse="$(python3 tools/geaenderte_kurse.py "$BASIS")"
+          kurse="$(python3 tools/geaenderte_kurse.py "$BASIS" --alle-wenn-fremd)"
           if [ -z "$kurse" ]; then
             echo "Kein Kurs geändert."
             exit 0
@@ -69,7 +71,8 @@ jobs:
       - name: JavaScript-Tests
         run: npm test
 
-  # Die Autorinnen und Autoren haben Python 3.9 auf dem Mac: der Code muss dort laufen. Kein Pflicht-Check.
+  # Die Autorinnen und Autoren haben Python 3.9 auf dem Mac: der Code muss dort laufen.
+  # Ebenfalls Pflicht-Check im Branch-Schutz (README, Abschnitt "Für Oliver").
   python39:
     name: python39
     runs-on: ubuntu-latest

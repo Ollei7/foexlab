@@ -15,12 +15,15 @@ concurrency:
 jobs:
   bauen:
     runs-on: ubuntu-latest
+    # Nur Leserechte: hier laufen npm ci und der Bau. Tag und Release setzt der Job "release".
     permissions:
-      contents: write   # Release und Tag aktualisieren
+      contents: read
       pages: write      # actions/configure-pages braucht die Pages-Schnittstelle
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # kein Schreib-Token in .git/config für npm-Skripte
 
       - uses: actions/setup-python@v5
         with:
@@ -45,25 +48,47 @@ jobs:
           cp -R dist foexlab-update
           zip -qr foexlab-update.zip foexlab-update
 
-      - name: Zip an Release "letzter-stand" hängen
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # Tag auf den aktuellen Stand setzen, damit Zip und Tag zusammenpassen
-          git tag -f letzter-stand "$GITHUB_SHA"
-          git push -f origin refs/tags/letzter-stand
-          if ! gh release view letzter-stand >/dev/null 2>&1; then
-            gh release create letzter-stand --title "Letzter Stand" \
-              --notes "Wird bei jeder Änderung an main automatisch ersetzt. foexlab-update.zip enthält den fertigen Stand für den Raspberry Pi." \
-              --verify-tag
-          fi
-          gh release upload letzter-stand foexlab-update.zip --clobber
+      - uses: actions/upload-artifact@v4
+        with:
+          name: foexlab-update
+          path: foexlab-update.zip
+          retention-days: 1
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
+  # Kleiner Job mit Schreibrecht: kein Checkout, kein npm, nur das fertige Zip.
+  release:
+    needs: bauen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Tag und Release "letzter-stand" aktualisieren
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: foexlab-update
+
+      - name: Zip an Release "letzter-stand" hängen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # Tag auf den aktuellen Stand setzen, damit Zip und Tag zusammenpassen (per API, ohne Push aus einem Checkout)
+          if gh api "repos/$GH_REPO/git/ref/tags/letzter-stand" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$GH_REPO/git/refs/tags/letzter-stand" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+          else
+            gh api -X POST "repos/$GH_REPO/git/refs" -f ref=refs/tags/letzter-stand -f sha="$GITHUB_SHA" >/dev/null
+          fi
+          if ! gh release view letzter-stand >/dev/null 2>&1; then
+            gh release create letzter-stand --title "Letzter Stand" \
+              --notes "Wird bei jeder Änderung an main automatisch ersetzt. foexlab-update.zip enthält den fertigen Stand für den Raspberry Pi." \
+              --verify-tag
+          fi
+          gh release upload letzter-stand foexlab-update.zip --clobber
 
   veroeffentlichen:
     needs: bauen
