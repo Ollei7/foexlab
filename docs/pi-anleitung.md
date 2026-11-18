@@ -49,20 +49,35 @@ Danach das WAN-Kabel wieder abziehen.
 
 Nicht während eines Labortags: Geänderte Überschriften trennen die Verbindung zu bereits gespeicherten Eingaben.
 
-```bash
-python3 engine/build.py --alle
-rsync -av --delete dist/ pi@192.168.178.10:/srv/foexlab/
-```
+Mit dem Laptop in zwei Schritten (Mac und Linux; unter Windows fehlt `rsync`, dort den USB-Stick in Abschnitt 5 benutzen oder WSL):
 
-Der Mac muss dafür im WLAN „foeXlab“ sein.
+1. **Zu Hause oder im Büro, mit Internet:** den neuesten Stand laden. Das speichert `~/foexlab-update.zip`.
 
-Danach prüfen (läuft ohne Internet, Ergebnis auch in `pi-pruefung.txt`):
+   ```bash
+   python3 tools/pi_aktualisieren.py --laden
+   ```
+
+   Ist der Pi nicht erreichbar, bricht das Kopieren mit einer Meldung ab. Die geladene Datei bleibt trotzdem liegen.
+
+2. **Im Labor, im WLAN „foeXlab“ (ohne Internet):** denselben Befehl ohne `--laden` ausführen. Er entpackt und prüft das Zip, kopiert es per `rsync` auf den Pi (`pi@192.168.178.10`, anderer Pi mit `--pi benutzer@adresse`, andere Datei mit `--zip pfad`) und prüft danach den Pi.
+
+   ```bash
+   python3 tools/pi_aktualisieren.py
+   ```
+
+Das Skript meldet jeden Fehler auf Deutsch (Ende 0 = fertig, 1 = fehlgeschlagen, 2 = Einrichtung fehlt). Vorher gilt dasselbe wie beim Stick: Kopiert wird nur ein geprüfter Stand.
+
+Die Prüfung läuft von selbst mit, Ergebnis auch in `pi-pruefung.txt`. Sie lässt sich auch einzeln starten:
 
 ```bash
 python3 tools/pi_pruefen.py http://192.168.178.10
 ```
 
 Geprüft werden Startseite und Kurse, alle eingebundenen Dateien und der Abholdienst.
+
+Für Oliver geht weiterhin der direkte Weg vom lokalen Bau: `python3 engine/build.py --alle`, dann `rsync -av --delete dist/ pi@192.168.178.10:/srv/foexlab/`.
+
+Ohne Laptop-Verbindung zum Pi: siehe Abschnitt 5 (USB-Stick).
 
 ## 5 Inhalte aktualisieren mit USB-Stick
 
