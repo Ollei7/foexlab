@@ -50,7 +50,7 @@
     const umschalter = s3 ? [] : ['tabelle', 'diagramm'].map((a) => h('button', { type: 'button', 'class': 'fx-knopf', 'data-ansicht': a, 'aria-pressed': a === ansicht ? 'true' : 'false',
       onclick: () => { ansicht = a; zeige(); } }, a === 'tabelle' ? 'Tabelle' : 'Häufigkeitsdiagramm'));
 
-    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab' }, zeichnung,
+    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab mzi-einspaltig' }, zeichnung,
       h('div', { 'class': 'mzi-bedienung' }, regler && regler.el, h('div', { 'class': 'fx-knoepfe' }, knopf), status,
         h('div', { 'class': 'mzi-protokollkopf' }, h('strong', {}, 'Messreihen'), h('div', { 'class': 'fx-knoepfe' }, umschalter)), tabelle, bild)));
 

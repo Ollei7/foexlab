@@ -210,6 +210,8 @@ Vergleicht eure Vorhersage mit dem Ergebnis. Prüft, welche der beiden Hypothese
 
 Beschreibt das Ergebnis, ohne über Orte des Photons zu sprechen. Sagt nur, wie der Aufbau zum Zeitpunkt der Messung aussah und welche Zählraten gemessen wurden.
 
+### Deutung der Physik {.info}
+
 :::merksatz
 **Deutung der Physik**
 

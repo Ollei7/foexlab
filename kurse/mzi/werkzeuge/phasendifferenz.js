@@ -111,6 +111,10 @@
     diffBox.appendChild(h('div', { 'class': 'fx-knoepfe' }, diffKnopf)); diffBox.appendChild(diffMsg);
 
     if (schirm) { kurzBox.hidden = true; const skizze = h('div', { 'class': 'mzi-pd-skizze' }); skizze.innerHTML = M.aufbauSVG('laser', {}); flaeche.appendChild(skizze); }
+    if (!schirm) {   // Skizze von Aufbau 3 über der Kurzabfrage und noch einmal über der Tabelle, damit man beim Umweg nicht zurückscrollen muss
+      const skizze = () => { const z = h('div', { 'class': 'mzi-zeichnung mzi-skizze-klein' }); z.innerHTML = M.aufbauSVG('a3', { c1: 0, c2: 0, d: 0, src: false }); return z; };
+      flaeche.appendChild(skizze()); tabBox.insertBefore(skizze(), tabBox.children[1] || null);
+    }
     flaeche.appendChild(h('div', { 'class': 'mzi-pd-lab' }, kurzBox, tabBox, diffBox));
 
     /* Zustand aus den Auswahlfeldern lesen */

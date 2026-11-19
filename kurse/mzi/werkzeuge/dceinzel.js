@@ -35,7 +35,7 @@
     const umschalter = ['tabelle', 'diagramm'].map((a) => h('button', { type: 'button', 'class': 'fx-knopf', 'data-ansicht': a, 'aria-pressed': a === ansicht ? 'true' : 'false',
       onclick: () => { ansicht = a; zeige(); } }, a === 'tabelle' ? 'Tabelle' : 'Häufigkeitsdiagramm'));
 
-    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab' }, zeichnung, zl.el,
+    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab mzi-einspaltig' }, zeichnung, zl.el,
       h('div', { 'class': 'mzi-bedienung' }, h('div', { 'class': 'fx-knoepfe' }, knopf), status,
         h('div', { 'class': 'mzi-protokollkopf' }, h('strong', {}, 'Einzelmessungen'), h('div', { 'class': 'fx-knoepfe' }, umschalter)), tabelle, bild)));
 
