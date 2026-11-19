@@ -366,6 +366,9 @@
     `.fx-mzi-lab{display:grid;gap:16px;align-items:start}` +
     `@media (min-width:900px){.fx-mzi-lab{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}}` +
     `.fx-mzi-lab .mzi-bedienung{min-width:0}` +
+    `@media (min-width:900px){.fx-mzi-lab.mzi-einspaltig{grid-template-columns:minmax(0,1fr)}}` +
+    `.fx-mzi-lab.mzi-einspaltig .mzi-zeichnung{max-width:600px}` +
+    `.mzi-skizze-klein{max-width:520px;margin:0 0 12px}` +
     `.mzi-zaehler{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}` +
     `.mzi-zelle{border:1px solid ${P.linie};border-top:5px solid ${P.cAB};border-radius:8px;padding:8px 12px}` +
     `.mzi-zelle.mzi-d2{border-top-color:${P.cAC}}` +

@@ -162,7 +162,7 @@ test('schirm: Tabelle richtig, dann Δφ (0, π) → erledigt, Reload stellt Zus
 test('ohne modus: Verhalten wie bisher', () => {
   const { el, sichtbar } = phase();
   assert.strictEqual(sichtbar('[data-pd="kurz-0"]'), true); assert.strictEqual(sichtbar('[data-pt="0-0"]'), false);
-  assert.strictEqual(el.querySelector('.fx-werkzeug-flaeche svg'), null);
+  assert.strictEqual(el.querySelectorAll('.mzi-skizze-klein svg').length, 2);   // Skizze Aufbau 3 oben und über der Tabelle
   assert.match(el.textContent, /Möglichkeit 1/); assert.doesNotMatch(el.textContent, /Weg 1/);
 });
 

@@ -7,7 +7,7 @@
     if (el._dcaLaden) return;   // schon aufgebaut
     const flaeche = el.querySelector('.fx-werkzeug-flaeche'), zl = M.zeitleiste(), zeichnung = h('div', { 'class': 'mzi-zeichnung' });
     zeichnung.innerHTML = M.aufbauSVG('dc', { choice: null, caption: 'wartet' });
-    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab' }, zeichnung, zl.el));
+    flaeche.appendChild(h('div', { 'class': 'fx-mzi-lab mzi-einspaltig' }, zeichnung, zl.el));
     el._dcaLaden = true;
   }
 

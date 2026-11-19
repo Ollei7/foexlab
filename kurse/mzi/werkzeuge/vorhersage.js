@@ -44,6 +44,8 @@
       return h('div', { 'class': 'mzi-pred-zeile', 'data-det': d }, h('span', { 'class': 'mzi-pred-name' }, 'Detektor ' + d),
         minus[d], eing[d], h('span', { 'class': 'mzi-pred-einheit' }, '%'), plus[d]);
     }
+    const skizze = M.konfig(el).skizze;   // z. B. "a1": Zeichnung des Aufbaus, damit die Hypothese den Aufbau vor Augen hat
+    if (skizze) { const z = h('div', { 'class': 'mzi-zeichnung mzi-skizze-klein' }); z.innerHTML = M.aufbauSVG(skizze, { c1: 0, c2: 0, d: 0, src: false }); flaeche.appendChild(z); }
     flaeche.appendChild(h('div', { 'class': 'mzi-pred' }, zeile(1), zeile(2)));
 
     el._vhWert = () => ({ p1: s.p1, p2: s.p2 });

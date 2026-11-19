@@ -33,7 +33,7 @@ Die nächste Aufgabe erscheint erst, wenn die aktuelle erledigt ist. „Weiter�
 
 Auf dem Experimentiertisch stehen eine Einzelphotonenquelle, ein Strahlteiler und zwei Detektoren.
 
-### Aufbau 1: Hypothese {.werkzeug name="vorhersage" sperrt #a1-pred}
+### Aufbau 1: Hypothese {.werkzeug name="vorhersage" skizze="a1" sperrt #a1-pred}
 
 Stellt eine Hypothese auf, mit welcher Wahrscheinlichkeit jeder der beiden Detektoren klickt. Tragt eure Werte ein und begründet sie in einem Satz.
 
@@ -68,7 +68,7 @@ Vergleicht eure Hypothese mit dem Ergebnis. Falls die Messwerte der Hypothese wi
 
 Der Aufbau wird um zwei Spiegel ergänzt.
 
-### Aufbau 2: Hypothese {.werkzeug name="vorhersage" sperrt #a2-pred}
+### Aufbau 2: Hypothese {.werkzeug name="vorhersage" skizze="a2" sperrt #a2-pred}
 
 Stellt eine Hypothese auf, mit welcher Wahrscheinlichkeit jeder der beiden Detektoren klickt. Tragt eure Werte ein und begründet sie in einem Satz.
 
@@ -103,7 +103,7 @@ Vergleicht eure Hypothese mit dem Ergebnis. Falls die Messwerte der Hypothese wi
 
 Der Aufbau wird um einen weiteren Strahlteiler ergänzt.
 
-### Aufbau 3: Hypothese {.werkzeug name="vorhersage" sperrt #a3-pred}
+### Aufbau 3: Hypothese {.werkzeug name="vorhersage" skizze="a3" sperrt #a3-pred}
 
 Stellt eine Hypothese auf, mit welcher Wahrscheinlichkeit jeder der beiden Detektoren klickt. Tragt eure Werte ein und begründet sie in einem Satz.
 

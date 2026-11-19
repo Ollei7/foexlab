@@ -99,7 +99,7 @@
       try { w = h ? h.wert(v) : undefined; } catch (e) { w = undefined; }
       var frei = alles || !istLeer(art, w);
       var karte = v.closest('.act, .fx-karte') || d.body || d;
-      Array.prototype.forEach.call(karte.querySelectorAll('.fx-feld, .fx-schritt'), function (f) {
+      Array.prototype.forEach.call(karte.querySelectorAll('.fx-feld, .fx-schritt, .q.desc'), function (f) {   // .q.desc: Info-Kästen ({.info}) erscheinen erst nach der Antwort
         if (f === v || !(v.compareDocumentPosition(f) & 4)) return;
         if (f.hasAttribute('data-fx-optional')) { f.removeAttribute('data-fx-gesperrt'); return; }   // freiwillige Felder sperrt nichts
         if (frei) f.removeAttribute('data-fx-gesperrt'); else f.setAttribute('data-fx-gesperrt', '1');
