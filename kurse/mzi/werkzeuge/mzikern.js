@@ -9,13 +9,14 @@
   /* ===================== Einstellungen (Schwellen der Spec) ===================== */
   const EINST = {
     AUFBAU_PHOTONEN: 5000,   // Aufbauten: Photonen pro Aufbau, bevor der Abgleich frei wird
-    SPIEGEL_PHASEN: 5,       // Spiegel verschieben: verschiedene Phasendifferenzen
+    SPIEGEL_PHASEN: 5,       // Armlänge verändern: verschiedene Gangunterschiede
     SPIEGEL_PHOTONEN: 1000,  // Spiegel verschieben: Photonen pro Messung
     EINZEL: 10,              // delayed choice, Schritt 1: Einzelmessungen
     MW_PHOTONEN: 1000,       // delayed choice: Einzelmessungen pro Messreihe (1 s)
-    S2_REIHEN: 3,            // Schritt 2: Messreihen bei Δφ = 0°
-    S3_PHASEN: 3, S3_JE: 2,  // Schritt 3: weitere Phasendifferenzen mit je 2 Messreihen
-    LAUF_SCHRITT: 10, LAUF_MS: 300   // Schritt 5: Schrittweite in Grad, Dauer pro Schritt im Zeitraffer (ms)
+    S2_REIHEN: 3,            // Schritt 2: Messreihen bei Δs = 0
+    S3_PHASEN: 3, S3_JE: 2,  // Schritt 3: weitere Gangunterschiede mit je 2 Messreihen
+    REGLER_SCHRITT: 22.5,    // Regler in Grad: 22,5° = λ/16 (v3: Gangunterschied statt Phasendifferenz)
+    LAUF_SCHRITT: 22.5, LAUF_MS: 400   // Schritt 5: Schrittweite in Grad (λ/16), Dauer pro Schritt im Zeitraffer (ms)
   };
 
   /* ===================== Palette und Textstile der Zeichnungen ===================== */
@@ -37,6 +38,15 @@
 
   /* ===================== Modell ===================== */
   const rad = (d) => d * Math.PI / 180;
+  /* Gangunterschied als Bruchteil von λ (v3). Intern bleibt der Wert in Grad: 360° = λ. 180 → „λ/2“, 0 → „0“;
+     Werte außerhalb des λ/16-Rasters (ältere Speicherstände in 10°-Schritten) als Dezimalbruch „0,03 λ“. */
+  const ggt = (a, b) => b ? ggt(b, a % b) : a;
+  function lamBruch(z, n) {
+    if (!z) return '0';
+    const g = ggt(z, n); z /= g; n /= g;
+    return n === 1 ? (z === 1 ? 'λ' : z + 'λ') : (z === 1 ? '' : z) + 'λ/' + n;
+  }
+  const DS = (phi) => { const k = phi / 22.5; return Math.abs(k - Math.round(k)) < 1e-6 ? lamBruch(Math.round(k), 16) : (phi / 360).toFixed(2).replace('.', ',') + ' λ'; };
   const pD1 = (drin, phiGrad) => drin ? Math.cos(rad(phiGrad) / 2) ** 2 : 0.5;   // Wahrscheinlichkeit für Detektor 1
   function binom(n, p, zufall) {
     zufall = zufall || Math.random;
@@ -141,7 +151,7 @@
     } else {
       parts = mirrorSVG(600, 110) + mirrorSVG(300, 320, -1) +
         `<text x="630" y="96" ${A.name}>Spiegel 1</text><text x="200" y="352" ${A.name}>Spiegel 2</text>`;
-      if (st.phaseOn) parts += `<text x="630" y="116" ${A.label}>verschiebbar (Δφ = ${st.phi}°)</text>`;
+      if (st.phaseOn) parts += `<text x="630" y="116" ${A.label}>Arm verlängert um Δs = ${DS(st.phi)}</text>`;
       if (mode === 'a2') parts += `<text x="574" y="298" text-anchor="end" ${A.label}>hier kein Strahlteiler</text>`;
       if (mode === 'a3') parts += bsSVG(600, 320) + `<text x="574" y="298" text-anchor="end" ${A.name}>Strahlteiler 2</text>`;
       if (mode === 'dc') {
@@ -224,9 +234,9 @@
     }
     let g = KOPF(W, H) + `<rect width="${W}" height="${H}" fill="#fff"/>`;
     yticks.forEach((v) => { g += `<line x1="${L}" y1="${Y(v)}" x2="${W - R}" y2="${Y(v)}" stroke="${P.linie}"/><text x="${L - 8}" y="${Y(v) + 5}" text-anchor="end" ${A.label}>${yfmt(v)}</text>`; });
-    [0, 90, 180, 270, 360].forEach((p) => { g += `<line x1="${X(p)}" y1="${H - B}" x2="${X(p)}" y2="${H - B + 5}" stroke="${P.gedaempft}"/><text x="${X(p)}" y="${H - B + 22}" text-anchor="middle" ${A.label}>${p}°</text>`; });
+    [0, 90, 180, 270, 360].forEach((p) => { g += `<line x1="${X(p)}" y1="${H - B}" x2="${X(p)}" y2="${H - B + 5}" stroke="${P.gedaempft}"/><text x="${X(p)}" y="${H - B + 22}" text-anchor="middle" ${A.label}>${DS(p)}</text>`; });
     g += `<line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="${P.gedaempft}"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="${P.gedaempft}"/>`;
-    g += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" ${A.label}>Phasendifferenz Δφ</text>`;
+    g += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" ${A.label}>Gangunterschied Δs</text>`;
     g += `<text transform="translate(16 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" ${A.label}>${ylabel}</text>`;
     let lx = L;
     series.forEach((s) => {
@@ -317,21 +327,21 @@
     setze(-1);
     return { el, setze };
   }
-  /* Regler Δφ 0–360° in 10°-Schritten (vorlage.html): beiAenderung(wert) bei jeder Bewegung */
+  /* Regler Gangunterschied Δs 0 bis λ in Schritten von λ/16 (v3; intern Grad, 360° = λ): beiAenderung(wert) bei jeder Bewegung */
   function phaseRegler(wert, beiAenderung) {
     const id = 'mzi-phi-' + (++zaehler);
-    const ausgabe = h('output', { for: id }, (wert || 0) + '°');
-    const eingabe = h('input', { type: 'range', id, min: 0, max: 360, step: 10, value: wert || 0 });
+    const ausgabe = h('output', { for: id }, DS(wert || 0));
+    const eingabe = h('input', { type: 'range', id, min: 0, max: 360, step: EINST.REGLER_SCHRITT, value: wert || 0 });
     eingabe.addEventListener('input', () => {
-      const v = Number(eingabe.value); ausgabe.textContent = v + '°';
+      const v = Number(eingabe.value); ausgabe.textContent = DS(v);
       if (beiAenderung) beiAenderung(v);
     });
     const el = h('div', { class: 'ctl mzi-regler' },
-      h('label', { for: id }, 'Spiegel verschieben: Phasendifferenz Δφ'), ausgabe, eingabe,
-      h('div', { class: 'ticks' }, h('span', {}, '0°'), h('span', {}, '90°'), h('span', {}, '180°'), h('span', {}, '270°'), h('span', {}, '360°')));
+      h('label', { for: id }, 'Arm über Spiegel 1 verlängern: Gangunterschied Δs'), ausgabe, eingabe,
+      h('div', { class: 'ticks' }, h('span', {}, '0'), h('span', {}, 'λ/4'), h('span', {}, 'λ/2'), h('span', {}, '3λ/4'), h('span', {}, 'λ')));
     return {
       el,
-      setze(v) { eingabe.value = v; ausgabe.textContent = v + '°'; },
+      setze(v) { eingabe.value = v; ausgabe.textContent = DS(v); },
       sperre(b) { eingabe.disabled = !!b; }
     };
   }
@@ -342,6 +352,8 @@
     `.mzi-zeitleiste div,.mzi-zeitleiste div small,.mzi-r,.mzi-hinweis,.mzi-regler .ticks,.mzi-pd th small{color:#B4B8C4}`,
     `.mzi-zeitleiste div{border-top-color:#444}`,
     `.mzi-regler input[type=range]{accent-color:#AEB9E0}`,
+    `.mzi-vgl-frage th{background:#2A3048;color:#E2E2E2}`,
+    `.fx-karte .qtext blockquote{background:#3A3024;color:#E2E2E2}`,
     `.mzi-zelle,.mzi-log th,.mzi-log td,.mzi-pd th,.mzi-pd td{border-color:#444}`,
     `.mzi-balken{background:#333}`,
     `.mzi-zitat{background:#2B2216;color:#E2E2E2}`,
@@ -394,6 +406,18 @@
     `.mzi-balken>div{height:100%;background:${P.orange};transition:width .2s}` +
     `.mzi-zitat{margin:8px 0;padding:8px 16px;border-left:5px solid ${P.orange};background:${P.orangeTint};color:${P.navy};white-space:pre-wrap}` +
     `.mzi-zitat canvas{display:block;width:100%;height:auto;background:#fff}` +
+    /* Zitate der Begründungen im Aufgabentext (v3, Markdown „>“) wie das Zitat der Vorhersage */
+    `.fx-karte .qtext blockquote{margin:8px 0 12px;padding:8px 16px;border-left:5px solid ${P.orange};background:${P.orangeTint};color:${P.navy}}` +
+    `.fx-karte .qtext blockquote p{margin:0}` +
+    /* Vergleichstabelle klassisch/quantenphysikalisch (Kapitel 5, v3) und Koinzidenz-Hilfe; auf schmalen Geräten untereinander */
+    `.mzi-vgl table{width:100%;border-collapse:collapse}` +
+    `.mzi-vgl th,.mzi-vgl td{padding:6px;vertical-align:top;text-align:left;border-bottom:1px solid ${P.linie}}` +
+    `.mzi-vgl td{width:50%}` +
+    `.mzi-vgl textarea{width:100%;box-sizing:border-box;font:inherit;min-height:4.5em}` +
+    `.mzi-vgl-frage th{background:${P.blauTint};color:${P.navy}}` +
+    `.mzi-vgl-spalte{display:none;font-size:13px;color:${P.gedaempft}}` +
+    `@media (max-width:640px){.mzi-vgl thead{display:none}.mzi-vgl td{display:block;width:auto}.mzi-vgl-spalte{display:block}}` +
+    `.mzi-koinz{display:grid;gap:8px;max-width:480px}` +
     /* Zeitungsausschnitt „Quanten-Aktuell“ (Zusatzaufgabe Kapitel 3), Werte aus der Quelle */
     `.zeitung{margin:8px 0 16px;padding:14px 18px 16px;background:#f7f3ea;color:#1d1d1b;border:1px solid #d8d0bd;box-shadow:2px 3px 0 #e6dfcd;font-family:Georgia,"Times New Roman",serif;transform:rotate(-.6deg);max-width:620px}` +
     `.zeitung .zkopf{font-family:"Old English Text MT","UnifrakturMaguntia",Georgia,serif;font-size:34px;font-weight:700;text-align:center;letter-spacing:.5px;border-bottom:3px double #1d1d1b;padding-bottom:4px}` +
@@ -406,6 +430,6 @@
     const s = root.document.createElement('style'); s.id = 'mzi-stil'; s.textContent = STIL; root.document.head.appendChild(s);
   }
 
-  FX.mzi = { EINST, P, pD1, binom, einzel, messreihe, aufbauSVG, polSkizzeSVG, diagrammSVG, ratenSVG, haeufigkeitSVG, balkenSVG, fitSin,
+  FX.mzi = { EINST, P, A, DS, lamBruch, bsSVG, mirrorSVG, pD1, binom, einzel, messreihe, aufbauSVG, polSkizzeSVG, diagrammSVG, ratenSVG, haeufigkeitSVG, balkenSVG, fitSin,
     hochzaehlen, zeitleiste, phaseRegler, h, melde, lies, konfig, pct, pause: wartePause };
 })(typeof self !== 'undefined' ? self : this);

@@ -195,6 +195,7 @@
           if (e.diagramm) bild(e.diagramm, 120, 75);
           if (e.ausgleichText) zeile(e.ausgleichText, 10.5, true, { farbe: NAVY });
         } else if (e.art === 'foto') {
+          if (e.ohneFoto) zeile('Kein Foto: Es ließ sich nicht hochladen.', 10.5, false, { farbe: GRAU });
           (e.bildDaten || []).forEach(function (b) { var w = 80, h = w * (b.h / b.w || 0.75); if (h > 100) { w = w * 100 / h; h = 100; } bild(b, w, h); });
         } else if (e.art === 'skizze') {
           if (e.bildDaten && e.bildDaten[0]) bild(e.bildDaten[0], 120, 120 / (e.verhaeltnis || 4 / 3));

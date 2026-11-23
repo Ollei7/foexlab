@@ -13,7 +13,7 @@
   const NAME = { 'in': 'drin', out: 'draußen' };
 
   const zaehl = (x) => (typeof x === 'number' && isFinite(x) && x >= 0 ? Math.round(x) : 0);
-  const gradWert = (x) => (typeof x === 'number' && isFinite(x) ? Math.max(0, Math.min(360, Math.round(x / 10) * 10)) : 0);
+  const gradWert = (x) => (typeof x === 'number' && isFinite(x) ? Math.max(0, Math.min(360, Math.round(x * 2) / 2)) : 0);
   const teil = (t) => ({ n: zaehl(t && t.n), k1: zaehl(t && t.k1), k2: zaehl(t && t.k2) });
   /* Modus aus dem Wert; alte Werte ohne „modus“: Messreihen bei Δφ ≠ 0° gehören zu Schritt 3, sonst zu Schritt 2 */
   function fuelle(w, standard) {
@@ -31,8 +31,8 @@
     const z = {}; mw.filter((m) => m.phi !== 0).forEach((m) => { z[m.phi] = (z[m.phi] || 0) + 1; });
     return Object.keys(z).map((p) => [Number(p), z[p]]).sort((a, b) => a[0] - b[0]);
   }
-  const zeilenText = (liste) => liste.map((m) => ['in', 'out'].map((c, j) => [j ? '' : String(m.nr), j ? '' : m.phi + '°', NAME[c], String(m[c].n), String(m[c].k1), String(m[c].k2)]));
-  const KOPF = ['Messreihe', 'Δφ', 'Strahlteiler 2', 'Messungen', 'Zählrate D1', 'Zählrate D2'];
+  const zeilenText = (liste) => liste.map((m) => ['in', 'out'].map((c, j) => [j ? '' : String(m.nr), j ? '' : M.DS(m.phi), NAME[c], String(m[c].n), String(m[c].k1), String(m[c].k2)]));
+  const KOPF = ['Messreihe', 'Δs', 'Strahlteiler 2', 'Messungen', 'Zählrate D1', 'Zählrate D2'];
 
   function init(el) {
     if (el._dmLaden) return;   // schon aufgebaut
@@ -66,16 +66,16 @@
       knopf.disabled = beschaeftigt || !bereit;
       if (s3) {
         const ph = phasenS3(s.mw), ok = ph.filter((p) => p[1] >= je).length;
-        status.textContent = (ok < ziel3 ? 'Phasendifferenzen mit mindestens ' + je + ' Messreihen: ' + ok + ' von ' + ziel3 + '.' : 'Phasendifferenzen mit mindestens ' + je + ' Messreihen: ' + ok + '. Weiter ist frei.') +
-          (ph.length ? ' Bisher: ' + ph.map((p) => p[0] + '° (' + p[1] + '×)').join(', ') + '.' : ' Stellt zuerst eine Phasendifferenz größer als 0° ein.');
+        status.textContent = (ok < ziel3 ? 'Gangunterschiede mit mindestens ' + je + ' Messreihen: ' + ok + ' von ' + ziel3 + '.' : 'Gangunterschiede mit mindestens ' + je + ' Messreihen: ' + ok + '. Weiter ist frei.') +
+          (ph.length ? ' Bisher: ' + ph.map((p) => M.DS(p[0]) + ' (' + p[1] + '×)').join(', ') + '.' : ' Stellt zuerst einen Gangunterschied größer als 0 ein.');
       } else {
         const n = s.mw.length, r = ziel2 - n;
-        status.textContent = r > 0 ? n + ' von ' + ziel2 + ' Messreihen bei Δφ = 0°. Noch ' + r + ' bis zur nächsten Aufgabe.' : n + ' Messreihen bei Δφ = 0°. Die nächste Aufgabe ist frei.';
+        status.textContent = r > 0 ? n + ' von ' + ziel2 + ' Messreihen bei Δs = 0. Noch ' + r + ' bis zur nächsten Aufgabe.' : n + ' Messreihen bei Δs = 0. Die nächste Aufgabe ist frei.';
       }
       tbody.innerHTML = '';
       if (!l.length) tbody.appendChild(h('tr', {}, h('td', { colspan: 6, 'class': 'mzi-leer' }, 'Noch keine Messreihe.')));
       l.forEach((m) => ['in', 'out'].forEach((c, j) => tbody.appendChild(h('tr', { 'class': j ? 'second' : 'first' },
-        h('td', {}, j ? '' : m.nr), h('td', {}, j ? '' : m.phi + '°'), h('td', {}, NAME[c]), h('td', {}, m[c].n), h('td', { 'class': 'c1' }, m[c].k1), h('td', { 'class': 'c2' }, m[c].k2)))));
+        h('td', {}, j ? '' : m.nr), h('td', {}, j ? '' : M.DS(m.phi)), h('td', {}, NAME[c]), h('td', {}, m[c].n), h('td', { 'class': 'c1' }, m[c].k1), h('td', { 'class': 'c2' }, m[c].k2)))));
       const tw = tabelle.querySelector('table').parentNode; tw.scrollTop = tw.scrollHeight;
       if (!s3) bild.innerHTML = M.haeufigkeitSVG(gruppen(s.mw), 'Noch keine Messreihe.') +
         '<p class="mzi-hinweis">Relative Häufigkeit der Messergebnisse an Detektor 1 und 2 in allen ' + s.mw.length + ' Messreihen zusammen, getrennt nach der Wahl des Zufallsgenerators.</p>';

@@ -81,7 +81,9 @@ def render_foto(ctx, q, text, blk):
              '<div class="fx-knoepfe">'
              '<label class="fx-knopf"><input type="file" class="fx-foto-eingabe" accept="image/*" capture="environment" hidden>Foto aufnehmen</label>'
              '<label class="fx-knopf"><input type="file" class="fx-foto-eingabe" accept="image/*" hidden>Aus Fotos wählen</label></div>'
-             '<ul class="fx-fotos"></ul><p class="fx-meldung" role="alert" hidden></p></div>')
+             '<ul class="fx-fotos"></ul><p class="fx-meldung" role="alert" hidden></p>'
+             '<p class="fx-foto-ohne-hinweis note" hidden></p>'
+             '<button type="button" class="fx-knopf fx-foto-ohne" hidden>Foto klappt nicht? Ohne Foto weiter</button></div>')
     return feld(q, "foto", inner)
 
 

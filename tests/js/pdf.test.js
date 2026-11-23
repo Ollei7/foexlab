@@ -176,3 +176,11 @@ test('Freiwillige Felder erscheinen nicht unter Noch offen', () => {
   const t = Array.from(FX.pdf.plane(p, { breite })).flatMap((s) => Array.from(s.ops)).filter((o) => o.art === 'text').map((o) => o.text);
   assert.ok(t.some((x) => x.includes('Pflicht'))); assert.ok(!t.some((x) => x.includes('Notizen')));
 });
+
+test('übersprungenes Foto: Vermerk im PDF', () => {
+  const w = dom(); const FX = lade(w, 'pdf');
+  const p = protokoll(1);
+  p.abschnitte[0].eintraege.push({ titel: 'Foto vom Muster', art: 'foto', leer: false, ohneFoto: true, bilder: [], bildDaten: [] });
+  const texte = alleOps(FX.pdf.plane(p, { breite })).filter((o) => o.art === 'text').map((o) => o.text);
+  assert.ok(texte.includes('Kein Foto: Es ließ sich nicht hochladen.'), texte.join(' | '));
+});

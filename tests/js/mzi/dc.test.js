@@ -95,7 +95,7 @@ test('dcmessreihe s2: Umschalter Tabelle/Häufigkeitsdiagramm, Protokoll nur Tab
   el.querySelector('[data-ansicht="diagramm"]').click(); assert.strictEqual(el.querySelector('[data-o="diagramm"]').hidden, false);
   assert.match(el.querySelector('[data-o="diagramm"]').textContent, /Strahlteiler 2 drin/);
   const p = plain(H.protokoll(el, wert())); assert.strictEqual(p.length, 1); assert.strictEqual(p[0].typ, 'tabelle'); assert.strictEqual(p[0].zeilen.length, 2);
-  assert.deepStrictEqual(p[0].kopf, ['Messreihe', 'Δφ', 'Strahlteiler 2', 'Messungen', 'Zählrate D1', 'Zählrate D2']);
+  assert.deepStrictEqual(p[0].kopf, ['Messreihe', 'Δs', 'Strahlteiler 2', 'Messungen', 'Zählrate D1', 'Zählrate D2']);
 });
 test('dcmessreihe s3: noch leeres Live-Feld von s2 (Init-Fenster) senkt die Nummer nicht', async () => {
   const u = reihe('s3', { vorher: 'delayed-choice/k3-s2/s2' });

@@ -33,6 +33,8 @@
 .fx-fotos li{display:flex;flex-direction:column;gap:var(--space-2)}
 .fx-fotos img{width:100%;height:auto;border:1px solid var(--grey-200)}
 .fx-meldung{color:#B3261E;font-weight:700}
+.fx-meldung.fx-info{color:inherit;font-weight:400}
+.fx-foto-ohne{margin-top:var(--space-2)}
 label.fx-knopf{display:inline-flex;align-items:center}
 .fx-flaeche{position:relative;width:100%;max-width:800px;border:1px solid var(--grey-200);background:#fff}
 .fx-flaeche .fx-vorlage{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.6;pointer-events:none}

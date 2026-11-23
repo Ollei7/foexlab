@@ -94,3 +94,16 @@ test('Bildzuordnung: Protokoll als Tabelle Platz | Zuordnung', () => {
   const h = FX.protokoll.html(p, {});
   assert.ok(h.indexOf('<td>Platz 2</td><td>–</td>') > -1);
 });
+
+test('Foto übersprungen („Ohne Foto weiter“): nicht leer, Vermerk statt Bild', () => {
+  const w = dom(`<main><section class="fx-karte" data-karte="a/k" data-abschnitt="1 Fotos">
+  <div class="fx-feld" data-fx-id="a/k/f" data-fx-art="foto" data-fx-titel="Foto vom Muster" data-fx-sperrt><ul class="fx-fotos"></ul><p class="fx-meldung" hidden></p></div></section></main>`);
+  const FX = lade(w, 'felder', 'foto', 'protokoll');
+  const p = FX.protokoll.sammle(w.document, { 'a/k/f': { bilder: [], ohne: true } }, { id: 'x', titel: 'X' }, new Date(2026, 10, 23));
+  const e = p.abschnitte[0].eintraege[0];
+  assert.strictEqual(e.leer, false);
+  assert.strictEqual(e.ohneFoto, true);
+  const html = FX.protokoll.html(p, {});
+  assert.match(html, /Kein Foto: Es ließ sich nicht hochladen\./);
+  assert.doesNotMatch(html, /Noch offen/);
+});

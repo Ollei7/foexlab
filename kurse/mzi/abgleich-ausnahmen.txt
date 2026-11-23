@@ -1,4 +1,4 @@
-# Sätze der Quelle "MZI Kurs Test/Inhalte", die der Abgleich nur wegen der Markdown-Schreibweise nicht findet.
+# Sätze der Quelle "MZI Kurs Test v3/Inhalte" (vorher "MZI Kurs Test/Inhalte"), die der Abgleich nur wegen der Markdown-Schreibweise nicht findet.
 # Format: "Datei: Abschnitt | Satzanfang" (mindestens 20 Zeichen), optional " # Grund".
 3-aufbau: Anleitung | Ersteinstellung der Justierhilfe # Bildunterschrift: steht als alt-Text der Abbildung, nicht als sichtbarer Text
 3-aufbau: Anleitung | Justierhilfe am anderen Ende der Platte # Bildunterschrift: steht als alt-Text der Abbildung

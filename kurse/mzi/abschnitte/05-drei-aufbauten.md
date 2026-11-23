@@ -1,8 +1,8 @@
 ---
 titel: "Drei Aufbauten"
 nr: 5
-oeffnet_nach: felder:muster/a-k4-muster
-grund: "Öffnet sich nach dem Vergleich der Interferenzmuster."
+oeffnet_nach: felder:muster/a-k4-gang
+grund: "Öffnet sich nach der Seite „Gangunterschied“ in Kapitel 4."
 ---
 
 ## Von der klassischen Physik zur Quantenphysik {#uebergang}
@@ -15,7 +15,8 @@ Jetzt wechselt ihr zur **Quantenphysik**: Statt des Lasers verwendet ihr eine Ei
 
 ## Einstieg {#k1-start}
 
-Aus dem vorherigen Unterricht kennt ihr schon Experimente mit einzelnen Photonen. Im Folgenden werdet ihr euch mit drei verschiedenen experimentellen Aufbauten beschäftigen.
+<!-- v2 (19.11.2026): Einstieg über die verbotene Frage statt über den Widerspruch (Erprobung: Lernende kannten das Ergebnis aus dem Unterricht). -->
+Aus dem Unterricht kennt ihr schon Experimente mit einzelnen Quantenobjekten. Dabei galt eine Regel: Die Frage **„Wie gelangt das Quantenobjekt von der Quelle zum Detektor?“** ist verboten. Am Beispiel des Mach-Zehnder-Interferometers wollen wir zeigen, warum das so ist. Als Einstieg beschäftigt ihr euch mit drei verschiedenen experimentellen Einzelphotonen-Aufbauten.
 
 ### So arbeitet ihr
 
@@ -183,60 +184,40 @@ Richtig. Eine Wahrscheinlichkeit von 100 % an einem Detektor wird als konstrukti
 
 Erläutert mithilfe der Phasendifferenzen die Entstehung von zwei gegensätzlichen Mustern in dem Aufbau.
 
-## Spiegel verschieben {#k1-phase}
+## Armlänge verändern {#k1-phase}
 
-Am realen Aufbau verändern sich die Interferenzmuster auf den Schirmen, wenn man beispielsweise mit dem Finger vorsichtig auf die Grundplatte drückt. Dabei ändert sich die **Phasendifferenz Δφ** zwischen den klassisch denkbaren Möglichkeiten. Bisher waren in der Simulation beide Arme exakt gleich lang (Δφ = 0°). Jetzt untersucht ihr systematisch, welchen Einfluss die Phasendifferenz auf die Zählraten der Detektoren hat.
+<!-- v2 (19.11.2026): Gangunterschied statt Phasenverschiebung; setzt die Seite „Gangunterschied“ der Aufbau-Lernumgebung voraus. -->
+Am klassischen Interferometer habt ihr gesehen, dass schon sehr kleine Gangunterschiede Δs die Interferenzmuster verändern. Bisher waren in der Simulation beide Arme exakt gleich lang (Δs = 0). Jetzt untersucht ihr, welchen Einfluss der Gangunterschied auf die Zählraten der Detektoren hat, wenn die Einzelphotonenquelle jeweils genau ein Photon emittiert.
 
-### Spiegel verschieben: Hypothese {.vermutung sperrt #ph-hyp platzhalter="Wir erwarten …, weil …"}
+### Armlänge verändern: Hypothese {.vermutung sperrt #ph-hyp platzhalter="Wir erwarten …, weil …"}
 
-Stellt eine Hypothese auf, wie sich die Zählraten der beiden Detektoren ändern, wenn ihr Δφ von 0° bis 360° erhöht. Begründet die Hypothese mithilfe von Beobachtungen am realen Aufbau.
+Stellt eine Hypothese auf, wie sich die Anteile der Messergebnisse an D1 und D2 ändern, wenn ihr den Gangunterschied von 0 bis λ erhöht. Begründet sie mithilfe eurer Beobachtungen am klassischen Interferometer.
 
-### Spiegel verschieben: Überprüfen {.werkzeug name="spiegel" sperrt #ph-mess}
+### Armlänge verändern: Überprüfen {.werkzeug name="spiegel" sperrt #ph-mess}
 
-Führt das Experiment mit der Simulation durch: Stellt mit dem Regler mindestens 5 verschiedene Werte für Δφ ein und nehmt bei jedem Wert 1000 Messungen vor. Die Messungen erscheinen in der Tabelle und im Diagramm.
+Führt das Experiment mit der Simulation durch: Stellt mit dem Regler mindestens 5 verschiedene Gangunterschiede ein und nehmt bei jedem Wert 1000 Messungen vor. Die Messungen erscheinen in der Tabelle und im Diagramm.
 
-### Spiegel verschieben: Kurze Kontrolle {.mc sperrt #ph-kontrolle}
+### Armlänge verändern: Kurze Kontrolle {.mc sperrt #ph-kontrolle}
 
-Wie hängt der Anteil der Messergebnisse an Detektor 1 von Δφ ab?
+Wie hängt der Anteil der Messergebnisse an Detektor 1 vom Gangunterschied Δs ab?
 
 :::antworten
-- [ ] Er bleibt bei allen Δφ ungefähr gleich.
-- [x] Er ändert sich mit Δφ zwischen nahezu 100 % und nahezu 0 %.
-- [ ] Er ändert sich nur bei genau einem Wert von Δφ.
+- [ ] Er bleibt bei allen Δs ungefähr gleich.
+- [x] Er ändert sich mit Δs zwischen nahezu 100 % und nahezu 0 %.
+- [ ] Er ändert sich nur bei genau einem Wert von Δs.
 :::
 :::falsch
 Schaut euch eure Messungen als Diagramm an.
 :::
 
-### Spiegel verschieben: Abgleich {.frei sperrt #ph-abgl platzhalter="Der Anteil an Detektor 1 …"}
+### Armlänge verändern: Abgleich {.frei sperrt #ph-abgl platzhalter="Der Anteil an Detektor 1 …"}
 
-Beschreibt den Einfluss der zusätzlichen Phasendifferenz Δφ auf die Zählraten der Detektoren. Vergleicht mit eurer Hypothese.
-
-### Abweichung des realen Aufbaus {.frei sperrt #ph-real}
-
-Am realen Aufbau kann abweichend von der Theorie konstruktive und destruktive Interferenz auf dem jeweils anderen Schirm auftreten. Erklärt diese Abweichung mithilfe eurer Erkenntnisse aus der Simulation.
-
-### Widerspruch zwischen Aufbau 1 und Aufbau 3 {.frei sperrt #k1-widerspruch}
-
-In Aufbau 1 klickt bei jedem Photon genau ein Detektor, nie beide zugleich. In Aufbau 3 beobachtet ihr Interferenz, zu der beide klassisch denkbaren Möglichkeiten beitragen. Erläutert, worin hier ein Widerspruch liegt.
-
-## Sicherung: Widerspruch {#k1-sich-1}
-
-:::info
-Dieses Ergebnis sollten wir gemeinsam vergleichen. Tauscht euch in der Zwischenzeit mit einer Nachbargruppe aus.
-:::
-
-:::lehrkraft
-Leitfragen für die Besprechung:
-
-- Woran zeigt sich in Aufbau 1, dass ein Photon nicht aufgeteilt wird?
-- Woran zeigt sich in Aufbau 3, dass beide klassisch denkbaren Möglichkeiten beitragen?
-- Warum lassen sich beide Beobachtungen nicht mit einem Photon vereinbaren, das genau eine der beiden Möglichkeiten nimmt?
-:::
+Beschreibt den Einfluss des Gangunterschieds auf die Zählraten der Detektoren. Vergleicht mit eurer Hypothese und mit den Interferenzmustern am klassischen Interferometer.
 
 ### Zusatzaufgabe: Wesenszüge {.frei optional #zus-k1}
 
-Aus den Doppelspaltexperimenten kennt ihr unter anderem diese Wesenszüge der Quantenphysik:
+<!-- v2: freiwillig am Ende von „Armlänge verändern“, die Sicherungsseite nach Kapitel 1 entfällt. -->
+Freiwillige Zusatzaufgabe, falls ihr schneller fertig seid. Aus den Doppelspaltexperimenten kennt ihr unter anderem diese Wesenszüge der Quantenphysik:
 
 - Statistisches Verhalten: Einzelne Messergebnisse lassen sich nicht vorhersagen, ihre Häufigkeiten schon.
 - Fähigkeit zur Interferenz: Führen mehrere klassisch denkbare Möglichkeiten zum selben Messergebnis, kann Interferenz auftreten.
@@ -244,10 +225,39 @@ Aus den Doppelspaltexperimenten kennt ihr unter anderem diese Wesenszüge der Qu
 
 Erläutert jeden Wesenszug an einer Beobachtung aus Kapitel 1.
 
-### Besprechung erledigt {.knopf oeffnet="drei-aufbauten/k1-sich-2" id="stopp-1"}
+## Klassisch und quantenphysikalisch {#k1-vgl}
 
-## Sicherung {#k1-sich-2 oeffnet_nach="knopf:stopp-1"}
+<!-- v2 (20.11.2026): Lernprodukt Vergleichstabelle statt Widerspruch -->
+Ihr habt das Mach-Zehnder-Interferometer klassisch mit einem Laser und quantenphysikalisch mit einer Einzelphotonenquelle untersucht. Jetzt vergleicht ihr beide.
 
-### Sicherung: Widerspruch {.frei sperrt #k1-sich}
+### Vergleich klassisch und quantenphysikalisch {.werkzeug name="vergleich" sperrt #vgl-tab}
 
-Fasst das Ergebnis der Besprechung zum Widerspruch zwischen Aufbau 1 und Aufbau 3 zusammen.
+Vergleicht das klassische und das quantenphysikalische Interferometer. Füllt dazu die Tabelle aus.
+
+:::mehr Wo findet ihr das?
+- **Was wird gemessen?** Klassisch: eure Beobachtungen und Fotos am realen Aufbau. Quantenphysikalisch: Kapitel 1, Aufbau 1.
+- **Koinzidenzmethode:** Kapitel 1, Aufbau 1, und die Koinzidenzsimulation in der Hilfe unter der Tabelle.
+- **Mach-Zehnder-Interferometer:** Klassisch: Aufbau-Teil, Seite „Vergleich der Interferenzmuster“. Quantenphysikalisch: Kapitel 1, Aufbau 3.
+- **Gangunterschied verändern:** Klassisch: Aufbau-Teil, Seite „Gangunterschied“. Quantenphysikalisch: Seite „Armlänge verändern“.
+- **Beschreibung:** Klassisch: Wie entsteht ein Interferenzmuster? Quantenphysikalisch: Womit habt ihr in Kapitel 1 die Zählraten vorhergesagt?
+:::
+
+:::lehrkraft
+Erwartungshorizont (klassisch | quantenphysikalisch):
+
+- **Was wird gemessen?** Helligkeit auf dem Schirm, ändert sich kontinuierlich | einzelne Klicks; aus vielen Messungen ergibt sich die Zählrate
+- **Koinzidenzmethode (Aufbau 1):** Koinzidenzen treten auf, weil die Intensität auf beide Ausgänge aufgeteilt wird (beide Schirme gleich hell) | keine Koinzidenzen: jedes Photon wird an genau einem Detektor nachgewiesen, nie an beiden zugleich; zufällig, je 50 %
+- **Mach-Zehnder-Interferometer (Aufbau 3), gleich lange Arme:** Mitte von Schirm 1 hell, von Schirm 2 dunkel | nur D1 klickt, D2 nie
+- **Gangunterschied verändern:** Muster wechseln periodisch, bei λ/2 vertauscht | Anteile wechseln periodisch zwischen 100 % und 0 %, gleicher Verlauf
+- **Beschreibung:** Welle wird am Strahlteiler geteilt, Teilwellen überlagern sich | Wahrscheinlichkeiten; zwei ununterscheidbare klassisch denkbare Möglichkeiten tragen beide bei
+:::
+
+### Hilfe: Koinzidenzmethode mit dem Laser {.werkzeug name="koinzidenz" optional #vgl-koinz}
+
+Ihr seid unsicher, was bei der Koinzidenzmethode mit dem Laser passiert? Wählt in der Simulation die Quelle aus, nehmt jeweils 1000 Messungen vor und vergleicht, wie oft beide Detektoren gleichzeitig klicken.
+
+### Ausblick {.info}
+
+:::info
+In Aufbau 2 lässt sich aus dem Detektor, der klickt, auf Reflexion oder Transmission am ersten Strahlteiler schließen. Interferenz gibt es dort nicht. In Aufbau 3 tritt Interferenz auf, dafür lässt sich dort nicht sagen, ob das Photon am ersten Strahlteiler reflektiert oder transmittiert wurde. Unklar ist jedoch, ob man nur nicht weiß, was am ersten Strahlteiler passiert, oder ob es grundsätzlich nicht feststeht.
+:::

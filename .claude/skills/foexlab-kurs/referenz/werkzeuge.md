@@ -35,7 +35,10 @@ Schnittstelle und Regeln: `docs/FORMAT.md`, Abschnitt „Werkzeug-Schnittstelle�
 | `vorhersage` | Hypothese: zwei Prozentwerte (Detektor 1/2, Summe 100 %), Plus/Minus in 5er-Schritten; wird festgehalten | – | `aufbau.test.js` |
 | `aufbau` | Einzelphotonen-MZI, Aufbau 1–3; 1/100/1000 Photonen senden, Tabelle/Diagramm, Vergleich mit der Vorhersage | `modus="1"\|"2"\|"3"`, `vorhersage="<feld-id>"` | `aufbau.test.js` |
 | `phasendifferenz` | Phasendifferenz Δφ je Detektor: Kurzabfrage, bei Fehler Tabelle der Phasensprünge | `modus="schirm"` (Laser, Schirme statt Detektoren) | `phase.test.js` |
-| `spiegel` | Spiegel verschieben: Δφ 0–360° per Regler, 1000 Photonen messen, Diagramm mit optionalem theoretischem Verlauf | – | `phase.test.js` |
+| `spiegel` | Armlänge verändern: Gangunterschied Δs 0 bis λ in λ/16 per Regler (intern Grad), 1000 Photonen messen, Diagramm mit optionalem theoretischem Verlauf | – | `phase.test.js` |
+| `gangunterschied` | Laser-MZI: Ringmuster auf Schirm 1 und 2 bei Gangunterschied Δs 0–2λ (λ = 532 nm), Regler in λ/16; nur Simulation, nie leer, nicht im Protokoll | – | `v3.test.js` |
+| `vergleich` | Vergleichstabelle klassisch/quantenphysikalisch, 5 Zeilen × 2 Textfelder; erledigt, wenn alle Felder ausgefüllt sind; Protokoll als Tabelle | – | `v3.test.js` |
+| `koinzidenz` | Koinzidenzmethode: Einzelphotonenquelle oder abgeschwächter Laser (Poisson, Mittelwert 1), 1000 Messungen zählen; nur Hilfe, nicht im Protokoll | – | `v3.test.js` |
 | `polskizze` | Skizze des Aufbaus mit Polarisationsfiltern; Fragetext wird Bildunterschrift; nur Anzeige | – | `polskizze.test.js` |
 | `dcaufbau` | Delayed-Choice-Aufbau mit Zeitleiste, nur Anzeige | – | `dc.test.js` |
 | `dceinzel` | Delayed Choice, Einzelmessungen: Photon senden, Zufallsgenerator wählt Strahlteiler 2 | – | `dc.test.js` |
