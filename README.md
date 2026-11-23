@@ -20,7 +20,7 @@ python3 tools/devserver.py          # Test: http://localhost:8000/
 Tests: `python3 -m pytest tests/py` und `npm test`.
 
 Inhaltsabgleich eines Kurses gegen eine Lesefassung (Auszug als Markdown): `python3 tools/inhaltsabgleich.py <auszug.md> kurse/mzi --ausnahmen kurse/mzi/abgleich-ausnahmen.txt`.
-Gegen einen Ordner mit Markdown-Quellen (`# Teil`, `## Abschnitt`), abschnittsweise: `python3 tools/inhaltsabgleich.py --quelle-md "MZI Kurs Test/Inhalte" kurse/mzi --ausnahmen kurse/mzi/abgleich-ausnahmen.txt` (Ausnahmen dort je Zeile „Datei: Abschnitt“ oder „Datei: Abschnitt | Satzanfang“, jeweils mit „ # Grund“). Exit 0: nichts fehlt; 1: Sätze fehlen; 2: falsche Eingabe.
+Gegen einen Ordner mit Markdown-Quellen (`# Teil`, `## Abschnitt`), abschnittsweise: `python3 tools/inhaltsabgleich.py --quelle-md "MZI Kurs Test v3/Inhalte" kurse/mzi --ausnahmen kurse/mzi/abgleich-ausnahmen.txt` (Ausnahmen dort je Zeile „Datei: Abschnitt“ oder „Datei: Abschnitt | Satzanfang“, jeweils mit „ # Grund“). Exit 0: nichts fehlt; 1: Sätze fehlen; 2: falsche Eingabe.
 
 ## Für das Team: neue Experimentseite
 

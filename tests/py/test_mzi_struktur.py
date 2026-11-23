@@ -96,7 +96,7 @@ def test_werkzeug_phasendifferenz_schirm(h):
 
 
 def test_kapitel5_uebergang_vor_einstieg(h):
-    assert "felder:muster/a-k4-muster" in h
+    assert "felder:muster/a-k4-gang" in h
     teil = h.split('<section class="fx-karte fx-ansicht" data-karte="drei-aufbauten/uebergang"', 1)[1]
     assert teil.split("<h2>", 1)[1].split("</h2>", 1)[0] == "Von der klassischen Physik zur Quantenphysik"
     assert h.index('data-karte="drei-aufbauten/uebergang"') < h.index('data-karte="drei-aufbauten/k1-start"')
@@ -116,9 +116,21 @@ def test_kapitel6_stopp_knopf(h):
 
 
 def test_kapitel6_felder(h):
-    for f in ("qr-hyp1", "qr-par", "qr-kr", "qr-ueb", "qr-abgl1", "qr-hyp2", "qr-rad", "qr-abgl2", "qr-sich", "qr-eign",
-              "pol-par", "pol-kr", "rad-p45", "rad-m45", "zus-k2", "qr-k1", "qr-k2"):
+    # v3: Hypothesen und Abgleiche entfallen, neu ist die Kontrollfrage zu Begründung 1 (qr-k3)
+    for f in ("qr-par", "qr-kr", "qr-ueb", "qr-rad", "qr-sich", "qr-eign",
+              "pol-par", "pol-kr", "rad-p45", "rad-m45", "zus-k2", "qr-k1", "qr-k2", "qr-k3"):
         assert f"/{f}" in h, f
+    for f in ("qr-hyp1", "qr-abgl1", "qr-hyp2", "qr-abgl2"):
+        assert f"/{f}\"" not in h, f
+
+
+def test_kapitel6_nur_ein_pflichtfoto_je_seite(h):
+    # Rückmeldung Erprobung: je Seite sperrt nur das erste Foto, das zweite ist freiwillig
+    import re
+    for pflicht, frei in (("k2-pol/pol-par", "k2-pol/pol-kr"), ("k2-rad/rad-p45", "k2-rad/rad-m45")):
+        a = re.search(rf'<div class="fx-feld"[^>]*data-fx-id="quantenradierer/{pflicht}"[^>]*>', h).group(0)
+        b = re.search(rf'<div class="fx-feld"[^>]*data-fx-id="quantenradierer/{frei}"[^>]*>', h).group(0)
+        assert "data-fx-sperrt" in a and "data-fx-sperrt" not in b and "data-fx-optional" in b
 
 
 def test_keine_kommentare_im_html(h):
@@ -146,7 +158,7 @@ def test_kapitel7_kontrolle_mit_versuchen(h):
 
 
 ALLE_KARTEN = {
-    "drei-aufbauten": ["uebergang", "k1-start", "k1-a1", "k1-a2", "k1-a3", "k1-phase", "k1-sich-1", "k1-sich-2"],
+    "drei-aufbauten": ["uebergang", "k1-start", "k1-a1", "k1-a2", "k1-a3", "k1-phase", "k1-vgl"],
     "quantenradierer": ["k2-frage", "k2-pol", "k2-rad", "k2-sich-1", "k2-sich-2"],
     "delayed-choice": ["k3-motiv", "k3-funk", "k3-s1", "k3-s2", "k3-s3", "k3-s4", "k3-s5", "k3-erg", "k3-deut", "k3-sich-1", "k3-sich-2"],
     "hintergrund-aufbau": ["hintergrund-aufbau"],
@@ -166,7 +178,7 @@ def test_alle_werkzeuge_vorhanden(bau):
 
 
 def test_feste_feldkennungen_kapitel_5_bis_7(h):
-    for fid in ("drei-aufbauten/k1-a1/a1-why", "delayed-choice/k3-motiv/dc-hyp"):
+    for fid in ("drei-aufbauten/k1-a1/a1-why", "delayed-choice/k3-funk/dc-hyp", "drei-aufbauten/k1-vgl/vgl-tab", "muster/a-k4-gang/gu-werte"):
         assert f'data-fx-id="{fid}"' in h, fid
 
 
@@ -179,16 +191,16 @@ def test_hintergruende_nachschlagen(h):
 
 
 def test_lehrkraft_kaesten(h):
-    # Stopp-Karten der Kapitel 5-7 (je eine) tragen einen Lehrkraft-Kasten; Kapitel 1-4 haben keine
-    for k in ("drei-aufbauten/k1-sich-1", "quantenradierer/k2-sich-1", "delayed-choice/k3-sich-1"):
-        assert 'class="fx-lehrkraft"' in _karte(h, k), k
-    assert h.count('class="fx-lehrkraft"') == 3
+    # v3: Erwartungshorizonte (Vergleichstabelle, Begründung 1, Vorhersage zu Begründung 2) und Leitfragen der Stopp-Karten; Kapitel 1-4 haben keine
+    for k, n in (("drei-aufbauten/k1-vgl", 1), ("quantenradierer/k2-sich-1", 2), ("delayed-choice/k3-funk", 1), ("delayed-choice/k3-sich-1", 1)):
+        assert _karte(h, k).count('class="fx-lehrkraft"') == n, k
+    assert h.count('class="fx-lehrkraft"') == 5
 
 
 def test_inhaltsabgleich_quelle():
     import os, subprocess, sys
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    quelle = os.path.join(root, "MZI Kurs Test", "Inhalte")
+    quelle = os.path.join(root, "MZI Kurs Test v3", "Inhalte")
     if not os.path.isdir(quelle):
         pytest.skip("Quellordner nicht vorhanden")
     r = subprocess.run([sys.executable, os.path.join(root, "tools", "inhaltsabgleich.py"), "--quelle-md", quelle,
@@ -223,7 +235,9 @@ def test_feldtitel_eindeutig_und_nach_vorlage(h):
 def test_kartentitel_kapitel_5_bis_7(h):
     for karte, titel in (("drei-aufbauten/k1-a2", "Aufbau 2: zwei Spiegel"), ("drei-aufbauten/k1-a3", "Aufbau 3: zweiter Strahlteiler"),
                          ("quantenradierer/k2-sich-1", "Komplementarität"), ("quantenradierer/k2-sich-2", "Sicherung: Komplementarität"),
-                         ("delayed-choice/k3-s1", "Schritt 1: Einzelmessungen"), ("delayed-choice/k3-s2", "Schritt 2: Messreihen bei Δφ = 0°"),
+                         ("delayed-choice/k3-s1", "Schritt 1: Einzelmessungen"), ("delayed-choice/k3-s2", "Schritt 2: Messreihen bei Δs = 0"),
+                         ("drei-aufbauten/k1-phase", "Armlänge verändern"), ("drei-aufbauten/k1-vgl", "Klassisch und quantenphysikalisch"),
+                         ("muster/a-k4-gang", "Gangunterschied"), ("delayed-choice/k3-s3", "Schritt 3: Gangunterschied verändern"),
                          ("delayed-choice/k3-s5", "Schritt 5: kompletter Messdurchlauf")):
         teil = h.split(f'<section class="fx-karte fx-ansicht" data-karte="{karte}"', 1)[1]
         assert teil.split("<h2>", 1)[1].split("</h2>", 1)[0] == titel, karte
@@ -235,7 +249,7 @@ KARTEN_1_BIS_4 = {
     "wiederholung": ["a-k1-start", "a-k1-wdh", "a-k1-ds"],
     "bauteile": ["a-k2-teile", "a-k2-schema"],
     "aufbau": ["a-k3-fehler", "a-k3-material", "a-k3-aufbau"],
-    "muster": ["a-k4-muster"],
+    "muster": ["a-k4-muster", "a-k4-gang"],
 }
 
 
@@ -257,9 +271,9 @@ FREISCHALTKETTE = (
     ("bauteile", "felder:wiederholung/a-k1-ds"),
     ("aufbau", "felder:bauteile/a-k2-schema"),
     ("muster", "knopf:aufbau-fertig"),
-    ("drei-aufbauten", "felder:muster/a-k4-muster"),
-    ("quantenradierer", "felder:drei-aufbauten/k1-sich-2"),
-    ("delayed-choice", "felder:quantenradierer/k2-sich-2"),
+    ("drei-aufbauten", "felder:muster/a-k4-gang"),
+    ("quantenradierer", "felder:drei-aufbauten/k1-vgl"),
+    ("delayed-choice", "knopf:stopp-2"),
 )
 
 
@@ -288,7 +302,6 @@ def test_freischaltkette(h, abschnitt, bedingung):
 
 def test_kartenregeln_stopp_knoepfe(h):
     assert _regeln(h)["kartenregeln"] == {
-        "drei-aufbauten/k1-sich-2": {"oeffnet_nach": "knopf:stopp-1", "grund": "Öffnet sich über ‚Besprechung erledigt‘."},
         "quantenradierer/k2-sich-2": {"oeffnet_nach": "knopf:stopp-2", "grund": "Öffnet sich über ‚Besprechung erledigt‘."},
         "delayed-choice/k3-sich-2": {"oeffnet_nach": "knopf:stopp-3", "grund": "Öffnet sich über ‚Besprechung erledigt‘."},
     }

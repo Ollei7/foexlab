@@ -1,4 +1,4 @@
-/* Werkzeug „spiegel“ (Kapitel 1, Spiegel verschieben): Aufbau 3 mit verschiebbarem Spiegel, Phasendifferenz Δφ 0–360° in 10°-Schritten.
+/* Werkzeug „spiegel“ (Kapitel 1, Spiegel verschieben): Aufbau 3 mit verschiebbarem Spiegel, Gangunterschied Δs 0 bis λ in λ/16-Schritten (intern Grad, 360° = λ).
    Knopf „1000 Photonen messen“ würfelt jedes Photon einzeln (P(D1) = cos²(Δφ/2)); Tabelle und Diagramm (Anteil über Δφ),
    optional mit theoretischem Verlauf. Wert: {log: [{phi, n, k1, k2}]}.
    Erledigt (nicht leer) bei mindestens EINST.SPIEGEL_PHASEN verschiedenen Δφ; „begonnen“ ab der ersten Messung (Hypothese festhalten).
@@ -7,7 +7,7 @@
   const FX = root.FX, M = FX.mzi, h = M.h;
 
   const zaehl = (x) => (typeof x === 'number' && isFinite(x) && x >= 0 ? Math.round(x) : 0);
-  const gradWert = (x) => (typeof x === 'number' && isFinite(x) ? Math.max(0, Math.min(360, Math.round(x / 10) * 10)) : 0);
+  const gradWert = (x) => (typeof x === 'number' && isFinite(x) ? Math.max(0, Math.min(360, Math.round(x * 2) / 2)) : 0);
   function fuelle(w) {
     const log = [];
     ((w && w.log) || []).forEach((r) => { if (r && zaehl(r.n) > 0) log.push({ phi: gradWert(r.phi), n: zaehl(r.n), k1: zaehl(r.k1), k2: zaehl(r.k2) }); });
@@ -39,7 +39,7 @@
     const status = h('p', { 'class': 'mzi-status', role: 'status', 'data-o': 'st' });
     const tbody = h('tbody');
     const tabelle = h('div', { 'class': 'mzi-log fx-tab-wrap', 'data-o': 'tabelle' }, h('table', {}, h('thead', {}, h('tr', {},
-      ['Δφ', 'Photonen', 'Messergebnisse D1', 'Messergebnisse D2', 'Anteil D1', 'Anteil D2'].map((t) => h('th', {}, t)))), tbody));
+      ['Δs', 'Photonen', 'Messergebnisse D1', 'Messergebnisse D2', 'Anteil D1', 'Anteil D2'].map((t) => h('th', {}, t)))), tbody));
     const bild = h('div', { 'class': 'mzi-diagramm', 'data-o': 'diagramm' });
     const theorie = h('input', { type: 'checkbox', 'data-o': 'theorie' });
     theorie.addEventListener('change', () => zeige());
@@ -59,13 +59,13 @@
     function zeige() {
       const ph = phasen(s.log);
       regler.sperre(beschaeftigt); messen.disabled = beschaeftigt;
-      status.textContent = ph.length < ziel ? 'Gemessen bei ' + ph.length + ' von ' + ziel + ' Phasendifferenzen' + (ph.length ? ': ' + ph.join('°, ') + '°' : '') + '.'
-        : 'Gemessen bei ' + ph.length + ' Phasendifferenzen. Der Abgleich ist frei.';
+      status.textContent = ph.length < ziel ? 'Gemessen bei ' + ph.length + ' von ' + ziel + ' Gangunterschieden' + (ph.length ? ': ' + ph.map(M.DS).join(', ') : '') + '.'
+        : 'Gemessen bei ' + ph.length + ' Gangunterschieden. Der Abgleich ist frei.';
       tbody.innerHTML = '';
       if (!s.log.length) tbody.appendChild(h('tr', {}, h('td', { colspan: 6, 'class': 'mzi-leer' }, 'Noch keine Messung.')));
-      s.log.forEach((r) => tbody.appendChild(h('tr', {}, h('td', {}, r.phi + '°'), h('td', {}, r.n), h('td', { 'class': 'c1' }, r.k1), h('td', { 'class': 'c2' }, r.k2),
+      s.log.forEach((r) => tbody.appendChild(h('tr', {}, h('td', {}, M.DS(r.phi)), h('td', {}, r.n), h('td', { 'class': 'c1' }, r.k1), h('td', { 'class': 'c2' }, r.k2),
         h('td', {}, M.pct(r.k1 / r.n, 1)), h('td', {}, M.pct(r.k2 / r.n, 1)))));
-      bild.innerHTML = diagramm(s.log, theorie.checked) + '<p class="mzi-hinweis">Jeder Punkt: Anteil der Messergebnisse bei dieser Phasendifferenz (mehrere Messungen bei derselben Phasendifferenz werden zusammengefasst).' +
+      bild.innerHTML = diagramm(s.log, theorie.checked) + '<p class="mzi-hinweis">Jeder Punkt: Anteil der Messergebnisse bei diesem Gangunterschied (mehrere Messungen beim selben Gangunterschied werden zusammengefasst).' +
         (theorie.checked ? ' Gestrichelt: theoretischer Verlauf.' : '') + '</p>';
       tabelle.hidden = ansicht !== 'tabelle'; diaBox.hidden = ansicht !== 'diagramm';
       umschalter.forEach((b) => b.setAttribute('aria-pressed', b.getAttribute('data-ansicht') === ansicht ? 'true' : 'false'));
@@ -97,8 +97,8 @@
     protokoll: (el, w) => {
       const s = fuelle(w);
       return [
-        { typ: 'tabelle', kopf: ['Δφ', 'Photonen', 'D1', 'D2', 'Anteil D1', 'Anteil D2'],
-          zeilen: s.log.map((r) => [r.phi + '°', String(r.n), String(r.k1), String(r.k2), M.pct(r.k1 / r.n, 1), M.pct(r.k2 / r.n, 1)]) },
+        { typ: 'tabelle', kopf: ['Δs', 'Photonen', 'D1', 'D2', 'Anteil D1', 'Anteil D2'],
+          zeilen: s.log.map((r) => [M.DS(r.phi), String(r.n), String(r.k1), String(r.k2), M.pct(r.k1 / r.n, 1), M.pct(r.k2 / r.n, 1)]) },
         { typ: 'grafik', svg: diagramm(s.log, false), breite_mm: 110 }
       ];
     }

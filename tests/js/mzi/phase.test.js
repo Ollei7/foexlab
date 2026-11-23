@@ -166,9 +166,9 @@ test('ohne modus: Verhalten wie bisher', () => {
   assert.match(el.textContent, /Möglichkeit 1/); assert.doesNotMatch(el.textContent, /Weg 1/);
 });
 
-test('spiegel: Regler in 10°-Schritten 0–360', () => {
+test('spiegel: Regler in λ/16-Schritten 0 bis λ (intern 0–360°)', () => {
   const { regler } = spiegel();
-  assert.deepStrictEqual([regler.min, regler.max, regler.step], ['0', '360', '10']);
+  assert.deepStrictEqual([regler.min, regler.max, regler.step], ['0', '360', '22.5']);
 });
 test('spiegel: 4 verschiedene Δφ → leer, 5 → erledigt; begonnen ab der ersten Messung', async () => {
   const { H, messe, wert, el, aenderungen } = spiegel();
@@ -189,7 +189,7 @@ test('spiegel: Knöpfe und Regler während der Messung gesperrt, change erst am 
   assert.strictEqual(aenderungen(), 0); await warte(1000);
   assert.strictEqual(aenderungen(), 1); assert.strictEqual(regler.disabled, false);
   assert.strictEqual(el.querySelectorAll('[data-o="tabelle"] tbody tr').length, 1);
-  assert.deepStrictEqual(Array.from(el.querySelectorAll('[data-o="tabelle"] tbody tr')[0].children).slice(0, 4).map((c) => c.textContent).slice(0, 2), ['180°', '1000']);
+  assert.deepStrictEqual(Array.from(el.querySelectorAll('[data-o="tabelle"] tbody tr')[0].children).slice(0, 4).map((c) => c.textContent).slice(0, 2), ['λ/2', '1000']);
 });
 test('spiegel: Diagramm, Theorie, laden und Protokoll', () => {
   const { el, H, wert } = spiegel();

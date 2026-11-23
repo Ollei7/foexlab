@@ -1,5 +1,5 @@
 /* Werkzeug „dcdurchlauf“ (Kapitel 3, Schritt 5, Messdurchlauf).
-   Die Messsoftware stellt Δφ von 0° bis 360° in EINST.LAUF_SCHRITT-Schritten ein (37 Messreihen) und nimmt je eine Messreihe auf;
+   Die Messsoftware stellt Δφ von 0° bis 360° in EINST.LAUF_SCHRITT-Schritten ein (17 Messreihen, Schritte von λ/16) und nimmt je eine Messreihe auf;
      im Zeitraffer, EINST.LAUF_MS je Schritt, mit Fortschrittsbalken und beiden Diagrammen (drin/draußen, mit Trendlinie).
      Wert: {run: [{phi, in: {n, k1, k2}, out: {n, k1, k2}}]}. Der Wert wird erst nach dem letzten Schritt gesetzt (vorher nur Anzeige),
      „change“ erst dann; währenddessen ist der Knopf gesperrt. „Messdurchlauf wiederholen“ ersetzt den Wert. Erledigt bei vollständigem Durchlauf.
@@ -7,7 +7,7 @@
      kein eigener Wert, nicht im Protokoll (der Durchlauf steht dort schon beim Feld „lauf“). */
 (function (root) {
   const FX = root.FX, M = FX.mzi, h = M.h;
-  const anzahl = () => Math.floor(360 / M.EINST.LAUF_SCHRITT) + 1;   // 37
+  const anzahl = () => Math.floor(360 / M.EINST.LAUF_SCHRITT) + 1;   // 17 (λ/16-Schritte)
 
   const zaehl = (x) => (typeof x === 'number' && isFinite(x) && x >= 0 ? Math.round(x) : 0);
   const teil = (t) => ({ n: zaehl(t && t.n), k1: zaehl(t && t.k1), k2: zaehl(t && t.k2) });
@@ -31,7 +31,7 @@
     const fuell = h('div', { style: 'width:0%' }), balken = h('div', { 'class': 'mzi-balken', 'data-o': 'balken', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': anzahl() }, fuell);
     const dia = diagramme();
     flaeche.appendChild(h('div', {}, h('div', { 'class': 'fx-mzi-lab' }, zeichnung, h('div', { 'class': 'mzi-bedienung' }, h('div', { 'class': 'fx-knoepfe' }, knopf), balken, status)), dia.el,
-      h('p', { 'class': 'mzi-hinweis' }, 'Jeder Punkt: Zählrate einer Messreihe (1 Sekunde) bei dieser Phasendifferenz, getrennt nach der Einstellung des Zufallsgenerators. Linie: Trendlinie durch die Messpunkte.')));
+      h('p', { 'class': 'mzi-hinweis' }, 'Jeder Punkt: Zählrate einer Messreihe (1 Sekunde) bei diesem Gangunterschied, getrennt nach der Einstellung des Zufallsgenerators. Linie: Trendlinie durch die Messpunkte.')));
 
     function zeichne(phi, c1, c2, opt) {
       zeichnung.innerHTML = M.aufbauSVG('dc', Object.assign({ phaseOn: true, phi, c1, c2, detLabel: 'Zählrate in dieser Messreihe', caption: 'wartet' }, opt));
@@ -49,7 +49,7 @@
       beschaeftigt = true; anz = []; zeige();
       const neu = [], ms = M.EINST.LAUF_MS;
       for (let p = 0; p <= 360; p += M.EINST.LAUF_SCHRITT) {
-        status.textContent = 'Messreihe bei Δφ = ' + p + '° (' + (neu.length + 1) + ' von ' + anzahl() + ') …';
+        status.textContent = 'Messreihe bei Δs = ' + M.DS(p) + ' (' + (neu.length + 1) + ' von ' + anzahl() + ') …';
         const m = M.messreihe(p), k1 = m['in'].k1 + m.out.k1, k2 = m['in'].k2 + m.out.k2;   // vorab gewürfelt, angezeigt im Zeitraffer
         if (ms > 0) {
           let wechsel = 0, wahl = 'in';

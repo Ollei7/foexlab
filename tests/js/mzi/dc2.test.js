@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const { dom, lade, ladeDatei, mitDb, plain, warte } = require('../helfer');
 
 const KONFIG = (o) => "'" + JSON.stringify(o) + "'";
-const S2 = 'delayed-choice/k3-s2/s2', S3 = 'delayed-choice/k3-s3/s3', LAUF = 'delayed-choice/k3-s5/s5', HYP = 'delayed-choice/k3-motiv/dc-hyp';
+const S2 = 'delayed-choice/k3-s2/s2', S3 = 'delayed-choice/k3-s3/s3', LAUF = 'delayed-choice/k3-s5/s5', HYP = 'delayed-choice/k3-funk/dc-hyp';
 function feld(art, id, konfig) {
   return `<div class="fx-feld" data-fx-id="${id}" data-fx-art="${art}" data-fx-titel="T"${konfig ? ' data-fx-konfig=' + KONFIG(konfig) : ''}><div class="fx-werkzeug-flaeche"></div></div>`;
 }
@@ -61,10 +61,10 @@ test('dcsortieren: gleiche Nummer in s2 und s3 → keine Zeile geht verloren, Nu
   const zeilen = Array.from(t.el.querySelectorAll('tbody tr[data-key]'));
   assert.strictEqual(zeilen.length, 6);
   assert.deepStrictEqual(zeilen.map((z) => z.getAttribute('data-key')), ['s2-1in', 's2-1out', 's2-2in', 's2-2out', 's3-2in', 's3-2out']);
-  assert.strictEqual(zeilen[4].children[0].textContent, '2'); assert.strictEqual(zeilen[4].children[1].textContent, '90°');
+  assert.strictEqual(zeilen[4].children[0].textContent, '2'); assert.strictEqual(zeilen[4].children[1].textContent, 'λ/4');
   t.knopf(2, 'in', 'in', 's3').click();
   assert.deepStrictEqual(t.wert().zuordnung, { 's3-2in': 'in' });
-  assert.match(t.el.querySelector('[data-o="mittel"]').textContent, /90°/);
+  assert.match(t.el.querySelector('[data-o="mittel"]').textContent, /λ\/4/);
 });
 test('dcsortieren: Mittelwert aus 120 und 130 ist 125, nur Sortiertes zählt', async () => {
   const t = await sortieren();
@@ -72,7 +72,7 @@ test('dcsortieren: Mittelwert aus 120 und 130 ist 125, nur Sortiertes zählt', a
   t.knopf(1, 'in', 'in').click(); assert.match(t.el.querySelector('[data-o="mittel"]').textContent, /120,0/);
   t.knopf(2, 'in', 'in').click();
   const p = plain(t.H.protokoll(t.el, t.wert()));
-  assert.strictEqual(p[0].typ, 'tabelle'); assert.deepStrictEqual(p[0].zeilen[0].slice(0, 4), ['0°', '2', '125,0', '0,0']);
+  assert.strictEqual(p[0].typ, 'tabelle'); assert.deepStrictEqual(p[0].zeilen[0].slice(0, 4), ['0', '2', '125,0', '0,0']);
   assert.strictEqual(p[1].typ, 'grafik'); assert.strictEqual(p[2].typ, 'grafik'); assert.ok(!p[1].svg.includes('var(') && !p[2].svg.includes('var('));
 });
 
@@ -82,30 +82,30 @@ async function durchlauf(modus, extra) {
   let n = 0; el.addEventListener('change', () => n++);
   return Object.assign(u, { el, H, wert: () => plain(H.wert(el)), aenderungen: () => n });
 }
-test('dcdurchlauf: 37 Reihen 0..360, Wert erst nach letztem Schritt', async () => {
+test('dcdurchlauf: 17 Reihen 0 bis λ in λ/16, Wert erst nach letztem Schritt', async () => {
   const t = await durchlauf('lauf'); t.M.EINST.LAUF_MS = 20;
   const k = t.el.querySelector('[data-o="lauf"]'); k.click(); assert.strictEqual(k.disabled, true);
   await warte(300);
   assert.strictEqual(t.wert().run.length, 0); assert.strictEqual(t.aenderungen(), 0); assert.strictEqual(t.H.leer(t.wert()), true);
   assert.ok(t.el.querySelector('[data-o="balken"]').style.width !== '0%');
   for (let i = 0; i < 100 && t.aenderungen() === 0; i++) await warte(100);   // jsdom zeichnet langsam
-  const w = t.wert(); assert.strictEqual(w.run.length, 37); assert.strictEqual(t.aenderungen(), 1); assert.strictEqual(k.disabled, false);
-  assert.deepStrictEqual(w.run.map((r) => r.phi), Array.from({ length: 37 }, (_, i) => i * 10));
+  const w = t.wert(); assert.strictEqual(w.run.length, 17); assert.strictEqual(t.aenderungen(), 1); assert.strictEqual(k.disabled, false);
+  assert.deepStrictEqual(w.run.map((r) => r.phi), Array.from({ length: 17 }, (_, i) => i * 22.5));
   assert.strictEqual(t.H.leer(w), false); assert.strictEqual(t.H.begonnen(w), true); assert.strictEqual(t.H.begonnen({ run: [] }), false);
   assert.match(k.textContent, /wiederholen/);
   // Wiederholen ersetzt den Wert
   t.M.EINST.LAUF_MS = 0; const alt = JSON.stringify(w.run); k.click(); await warte(200);
-  assert.strictEqual(t.wert().run.length, 37); assert.strictEqual(t.aenderungen(), 2);
+  assert.strictEqual(t.wert().run.length, 17); assert.strictEqual(t.aenderungen(), 2);
   const p = plain(t.H.protokoll(t.el, t.wert())); assert.strictEqual(p.length, 2); assert.ok(p.every((x) => x.typ === 'grafik' && !x.svg.includes('var(')));
   assert.notStrictEqual(JSON.stringify(t.wert().run), alt);   // neuer Durchlauf ersetzt den Wert
 });
 test('dcdurchlauf: draußen bei jeder Phase etwa 250/s an jedem Detektor (±60), drin folgt cos²', async () => {
   const t = await durchlauf('lauf'); t.M.EINST.LAUF_MS = 0;
   t.el.querySelector('[data-o="lauf"]').click(); await warte(300);
-  const run = t.wert().run; assert.strictEqual(run.length, 37);
+  const run = t.wert().run; assert.strictEqual(run.length, 17);
   run.forEach((r) => { assert.ok(Math.abs(r.out.k1 - 250) <= 60 && Math.abs(r.out.k2 - 250) <= 60, 'draußen bei ' + r.phi); });
-  assert.strictEqual(run[0].in.k2, 0); assert.strictEqual(run[36].in.k2, 0);   // 0° und 360°: drin nur Detektor 1
-  assert.strictEqual(run[18].in.k1, 0);   // 180°: drin nur Detektor 2
+  assert.strictEqual(run[0].in.k2, 0); assert.strictEqual(run[16].in.k2, 0);   // 0 und λ (360°): drin nur Detektor 1
+  assert.strictEqual(run[8].in.k1, 0);   // λ/2 (180°): drin nur Detektor 2
 });
 test('dcergebnis: ohneProtokoll, zeigt beide Diagramme aus der Quelle', async () => {
   const u = umgebung(feld('dcergebnis', 'delayed-choice/k3-erg/erg-anzeige', { quelle: LAUF }));

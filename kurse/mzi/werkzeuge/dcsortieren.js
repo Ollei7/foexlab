@@ -31,11 +31,11 @@
       k1: g[p].reduce((s, x) => s + x.k1, 0) / g[p].length, k2: g[p].reduce((s, x) => s + x.k2, 0) / g[p].length })).sort((a, b) => a.phi - b.phi);
   }
   const diagramm = (mw, z, c) => { const m = mittel(mw, z, c); return M.ratenSVG(m.map((x) => [x.phi, x.k1]), m.map((x) => [x.phi, x.k2]), { empty: 'Noch nichts eingetragen.' }); };
-  const KOPF = ['Δφ', 'drin: Messreihen', 'drin: Zählrate D1', 'drin: Zählrate D2', 'draußen: Messreihen', 'draußen: Zählrate D1', 'draußen: Zählrate D2'];
+  const KOPF = ['Δs', 'drin: Messreihen', 'drin: Zählrate D1', 'drin: Zählrate D2', 'draußen: Messreihen', 'draußen: Zählrate D1', 'draußen: Zählrate D2'];
   function mittelZeilen(mw, z) {
     const mi = mittel(mw, z, 'in'), mo = mittel(mw, z, 'out'), phis = Array.from(new Set(mi.concat(mo).map((x) => x.phi))).sort((a, b) => a - b);
     const f = (x) => (x ? [String(x.n), de(x.k1.toFixed(1)), de(x.k2.toFixed(1))] : ['–', '–', '–']);
-    return phis.map((p) => [p + '°'].concat(f(mi.find((x) => x.phi === p)), f(mo.find((x) => x.phi === p))));
+    return phis.map((p) => [M.DS(p)].concat(f(mi.find((x) => x.phi === p)), f(mo.find((x) => x.phi === p))));
   }
 
   function init(el) {
@@ -47,11 +47,11 @@
     const status = h('p', { 'class': 'mzi-status', role: 'status', 'data-o': 'st' });
     const tbody = h('tbody');
     const tabelle = h('div', { 'class': 'mzi-log fx-tab-wrap', 'data-o': 'tabelle' }, h('table', {}, h('thead', {}, h('tr', {},
-      ['Messreihe', 'Δφ', 'Zufallsgenerator wählte', 'Zählrate D1', 'Zählrate D2', 'Zuordnung zum Diagramm'].map((t) => h('th', {}, t)))), tbody));
+      ['Messreihe', 'Δs', 'Zufallsgenerator wählte', 'Zählrate D1', 'Zählrate D2', 'Zuordnung zum Diagramm'].map((t) => h('th', {}, t)))), tbody));
     const bildIn = h('div', { 'class': 'mzi-diagramm', 'data-o': 'drin' }), bildOut = h('div', { 'class': 'mzi-diagramm', 'data-o': 'draussen' });
     const mbody = h('tbody', { 'data-o': 'mittel' });
     const mt = h('div', { 'class': 'mzi-log fx-tab-wrap' }, h('table', {},
-      h('thead', {}, h('tr', {}, h('th', { rowspan: 2 }, 'Δφ'), h('th', { colspan: 3 }, 'Strahlteiler 2 drin'), h('th', { colspan: 3 }, 'Strahlteiler 2 draußen')),
+      h('thead', {}, h('tr', {}, h('th', { rowspan: 2 }, 'Δs'), h('th', { colspan: 3 }, 'Strahlteiler 2 drin'), h('th', { colspan: 3 }, 'Strahlteiler 2 draußen')),
         h('tr', {}, ['Messreihen', 'D1', 'D2', 'Messreihen', 'D1', 'D2'].map((t) => h('th', {}, t)))), mbody));
     flaeche.appendChild(h('div', { 'class': 'mzi-sortieren' }, status, tabelle,
       h('div', { 'class': 'mzi-diagramme' }, h('div', {}, h('h4', {}, 'Strahlteiler 2 drin'), bildIn), h('div', {}, h('h4', {}, 'Strahlteiler 2 draußen'), bildOut)),
@@ -65,7 +65,7 @@
       if (!zl.length) tbody.appendChild(h('tr', {}, h('td', { colspan: 6, 'class': 'mzi-leer' }, 'Keine Messreihen vorhanden.')));
       zl.forEach((z) => {
         const g = s.zuordnung[z.key], knopf = (to) => h('button', { type: 'button', 'class': 'fx-knopf', 'data-to': to, 'aria-pressed': g === to ? 'true' : 'false', onclick: () => waehle(z, to) }, NAME[to]);
-        tbody.appendChild(h('tr', { 'data-key': z.key, 'class': g ? 'ok' : '' }, h('td', {}, z.m.nr), h('td', {}, z.m.phi + '°'), h('td', {}, NAME[z.c]),
+        tbody.appendChild(h('tr', { 'data-key': z.key, 'class': g ? 'ok' : '' }, h('td', {}, z.m.nr), h('td', {}, M.DS(z.m.phi)), h('td', {}, NAME[z.c]),
           h('td', { 'class': 'c1' }, z.m[z.c].k1), h('td', { 'class': 'c2' }, z.m[z.c].k2), h('td', { 'class': 'pick' }, knopf('in'), knopf('out'))));
       });
       bildIn.innerHTML = diagramm(mw, s.zuordnung, 'in'); bildOut.innerHTML = diagramm(mw, s.zuordnung, 'out');

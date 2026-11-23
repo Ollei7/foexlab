@@ -59,7 +59,7 @@ test('zwei SVGs auf einer Seite haben verschiedene Filter-IDs', () => {
 });
 test('EINST enthält die Schwellen der Spec', () => assert.deepStrictEqual(plain(M.EINST), {
   AUFBAU_PHOTONEN: 5000, SPIEGEL_PHASEN: 5, SPIEGEL_PHOTONEN: 1000, EINZEL: 10, MW_PHOTONEN: 1000,
-  S2_REIHEN: 3, S3_PHASEN: 3, S3_JE: 2, LAUF_SCHRITT: 10, LAUF_MS: 300 }));
+  S2_REIHEN: 3, S3_PHASEN: 3, S3_JE: 2, REGLER_SCHRITT: 22.5, LAUF_SCHRITT: 22.5, LAUF_MS: 400 }));
 test('polSkizzeSVG und Diagramme liefern SVG', () => {
   assert.ok(M.polSkizzeSVG().startsWith('<svg'));
   assert.ok(M.ratenSVG([], []).includes('Noch keine Messwerte.'));
@@ -88,8 +88,8 @@ test('zeitleiste: Schritte, Auswahl und Detektor', () => {
 });
 test('phaseRegler: Wert, Änderung, Sperre', () => {
   let got = null; const r = M.phaseRegler(0, (v) => { got = v; });
-  const inp = r.el.querySelector('input'); assert.strictEqual(inp.step, '10');
-  r.setze(90); assert.strictEqual(inp.value, '90'); assert.ok(r.el.textContent.includes('90°'));
+  const inp = r.el.querySelector('input'); assert.strictEqual(inp.step, '22.5');
+  r.setze(90); assert.strictEqual(inp.value, '90'); assert.ok(r.el.textContent.includes('λ/4'));
   inp.value = '120'; inp.dispatchEvent(new inp.ownerDocument.defaultView.Event('input', { bubbles: true }));
   assert.strictEqual(got, 120);
   r.sperre(true); assert.strictEqual(inp.disabled, true);

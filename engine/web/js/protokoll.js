@@ -68,7 +68,7 @@
         e.ausgleichText = M.ausgleichText(konf, e.gerade, p.length);
         e.svg = p.length ? M.svgDiagramm(p, e.gerade, { x: M.kopf(M.spalte(konf, konf.diagramm.x)), y: M.kopf(M.spalte(konf, konf.diagramm.y)) }) : '';
       }
-    } else if (art === 'foto') e.bilder = (w && w.bilder) || [];
+    } else if (art === 'foto') { e.bilder = (w && w.bilder) || []; e.ohneFoto = !!(w && w.ohne && !e.bilder.length); }
     else if (art === 'skizze') {
       var kf = feld.getAttribute('data-fx-konfig'), fl = feld.querySelector('.fx-flaeche');
       e.striche = (w && w.striche) || [];
@@ -150,7 +150,8 @@
         return '<div class="fx-tab-wrap"><table class="fx-ergebnis-tabelle"><thead><tr>' + e.kopf.map(function (k) { return '<th>' + esc(k) + '</th>'; }).join('') + '</tr></thead><tbody>' +
           e.zeilen.map(function (z) { return '<tr>' + z.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
           (e.svg ? '<div class="fx-diagramm">' + e.svg + '</div>' : '') + (e.ausgleichText ? '<p class="fx-ausgleich">' + esc(e.ausgleichText) + '</p>' : '');
-      case 'foto': return '<div class="fx-fotos">' + e.bilder.map(function (b, i) { return '<img alt="Foto ' + (i + 1) + '" src="' + esc(bildUrl(b)) + '">'; }).join('') + '</div>';
+      case 'foto': if (e.ohneFoto) return '<p class="note">' + esc(FX().foto ? FX().foto.OHNE_TEXT : 'Kein Foto') + '</p>';
+        return '<div class="fx-fotos">' + e.bilder.map(function (b, i) { return '<img alt="Foto ' + (i + 1) + '" src="' + esc(bildUrl(b)) + '">'; }).join('') + '</div>';
       case 'skizze': return '<div class="fx-flaeche" style="aspect-ratio:' + e.verhaeltnis + '">' + (e.bild ? '<img class="fx-vorlage" alt="" src="' + esc(e.bild) + '">' : '') + '<canvas data-skizze="' + esc(e.id) + '"></canvas></div>';
       case 'schritte': return '<p class="fx-antwort">' + e.erledigt + ' von ' + e.gesamt + ' Schritten erledigt</p>';
     }
